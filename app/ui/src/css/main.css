@@ -807,7 +807,7 @@ input:checked + .switch:before {
 
 .select_world .gray_box {
     text-align: center;
-    width: 34.2%;
+    width: 30%;
     margin: 0 5px;
     color: #1d5faa;
     padding-top: 50px;

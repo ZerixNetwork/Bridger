@@ -3,6 +3,7 @@ import {BaseScreen} from "../baseScreen";
 import {ModeScreen} from "../mode/modeScreen";
 import api from "../../../api";
 import {Round2DP} from "../../progress";
+import {SchematicScreen} from "../schematic/schematicScreen";
 
 let jokes = [
     "How does Steve stay in shape? He runs around the block.",
@@ -331,6 +332,10 @@ export class SelectWorldScreen extends BaseScreen {
                         <button onClick={this.showFileBrowser} className="gray_box">
                             Select archive
                             <span>Supported types: .zip, .mcworld</span>
+                        </button>
+                        <button onClick={() => this.app.setScreen(SchematicScreen)} className="gray_box">
+                            Preview schematic
+                            <span>Java and Bedrock structures</span>
                         </button>
                     </div>
                 }
