@@ -2,7 +2,7 @@
   "name": "chunker-electron",
   "private": true,
   "version": "1.18.1",
-  "description": "Convert worlds between Java and Bedrock.",
+  "description": "Bridger converts Minecraft worlds between Java and Bedrock.",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "build": {
     "npmRebuild": false,
-    "productName": "Zerix Chunker",
+    "productName": "Bridger",
     "appId": "app.Chunker",
     "icon": "../ui/build/images/zerix/icon.png",
     "win": {

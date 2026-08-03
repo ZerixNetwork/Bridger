@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
   <id>app.chunker.chunker</id>
-  <name>Zerix Chunker</name>
+  <name>Bridger</name>
   <developer id="app.chunker">
     <name>Zerix Network</name>
   </developer>
@@ -17,23 +17,9 @@
     <p>WARNING: This flatpak is maintained by the Flathub community, and is not necessarily endorsed or officially maintained by the upstream developers.</p>
 
     <p>
-      Chunker is a free and open-source tool that can convert Minecraft worlds between different versions and platforms (Java and Bedrock). It has a simple GUI and a command line interface.
+      Bridger is a free and open-source tool by Zerix Network for converting Minecraft worlds between Java and Bedrock and previewing schematic files.
     </p>
   </description>
-  <screenshots>
-    <screenshot type="default">
-      <caption>Main Windows</caption>
-      <image>https://learn.microsoft.com/en-us/minecraft/creator/documents/media/chunker/chooseworld.png</image>
-    </screenshot>
-    <screenshot>
-      <caption>Target Version Selection</caption>
-      <image>https://learn.microsoft.com/en-us/minecraft/creator/documents/media/chunker/exportas.png</image>
-    </screenshot>
-    <screenshot>
-      <caption>Conversion Progress</caption>
-      <image>https://learn.microsoft.com/en-us/minecraft/creator/documents/media/chunker/converting.png</image>
-    </screenshot>
-  </screenshots>
   <categories>
     <category>Utility</category>
   </categories>
@@ -51,7 +37,6 @@
   </supports>
   <content_rating type="oars-1.1"/>
   <launchable type="desktop-id">app.chunker.chunker.desktop</launchable>
-  <update_contact>contact+chunker-flatpak@maxiicodes.dev</update_contact>
   <releases>
     <release version="1.18.1" date="2026-06-04" />
     <release version="1.18.0" date="2026-06-03" />

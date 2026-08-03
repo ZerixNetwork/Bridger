@@ -8,7 +8,7 @@ export class Footer extends Component {
             {this.state.credits && <div className="modal_overlay">
                 <div className="modal credits_modal">
                     <h3>Credits</h3>
-                    <p><strong>Zerix Chunker</strong> is a fork maintained by Zerix Network.</p>
+                    <p><strong>Bridger</strong> is a fork developed and maintained by Zerix Network.</p>
                     <p>Based on <a href="https://github.com/HiveGamesOSS/Chunker" target="_blank" rel="noopener noreferrer">Chunker</a>, originally created by Hive Games and distributed under the MIT License. Original copyright and license notices remain available in the included LICENSE file.</p>
                     <p><a href="https://www.minecraft.net" target="_blank" rel="noopener noreferrer">Minecraft</a> block textures are obtained from Mojang's official game client during the build and used only to identify blocks inside the schematic preview. They are not licensed under Chunker's MIT License.</p>
                     <p>Minecraft is a trademark of Microsoft. This fork is not affiliated with or endorsed by Hive Games, Mojang Studios, or Microsoft.</p>
@@ -34,7 +34,7 @@ export class Footer extends Component {
                         <a className="zerix_brand" href="https://github.com/ZerixNetwork" target="_blank" rel="noopener noreferrer">
                             <img src="images/zerix/logo.png" alt="Zerix"/>
                         </a>
-                        <p>Zerix Network fork of Chunker<br/><span className="copy">Fork modifications &copy; Zerix Network {new Date().getFullYear()}</span></p>
+                        <p>Bridger by Zerix Network<br/><span className="copy">Fork modifications &copy; Zerix Network {new Date().getFullYear()}</span></p>
                         <span className="build">
                             {(window.chunker && window.chunker.version) || "unknown"}-{(window.chunker && window.chunker.gitVersion) || "unknown"}
                         </span>

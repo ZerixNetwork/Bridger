@@ -94,10 +94,10 @@ export class ConverterSettingsTab extends Component {
         zip.file("dimension_mappings.chunker.json", this.app.getDimensionMappingsJSON());
         zip.file("biome_mappings.chunker.json", this.app.getBiomeMappingsJSON());
         zip.file("custom_dimensions.chunker.json", this.app.getCustomDimensionsJSON());
-        zip.file("README.txt", "Please copy the .json files in this folder to the same directory as your level.dat, Chunker will automatically preload these when you select your world.");
+        zip.file("README.txt", "Copy the .json files in this folder to the same directory as your level.dat. Bridger will preload them when you select your world.");
 
         zip.generateAsync({type: "blob"}).then(function (blob) {
-            saveAs(blob, "ExportedChunkerSettings.zip");
+            saveAs(blob, "ExportedBridgerSettings.zip");
         }, function (err) {
             // Just print for now
             console.error(err);
@@ -121,7 +121,7 @@ export class ConverterSettingsTab extends Component {
                         ))}
                         <div className="white_box">
                             <label className="legend" htmlFor="name">
-                                <span className="tooltip">Placing these files in the same directory as your level.dat will load them when the world is loaded with Chunker.</span>Export
+                                <span className="tooltip">Placing these files in the same directory as your level.dat will load them when the world is opened with Bridger.</span>Export
                                 Settings for Preloading
                             </label>
                             <div className="fields">

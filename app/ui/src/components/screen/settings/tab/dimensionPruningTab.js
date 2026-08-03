@@ -233,7 +233,7 @@ export class DimensionPruningTab extends Component {
                     {
                         "display": "Region Name",
                         "name": "name",
-                        "description": "The internal name used for this region, useful for if you're exporting your Chunker settings.",
+                        "description": "The internal name used for this region, useful when exporting your Bridger settings.",
                         "type": "String",
                         "value": region.name ?? ("Region " + (index + 1)),
                         "region": index

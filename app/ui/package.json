@@ -1,7 +1,7 @@
 {
   "name": "chunker-ui",
   "private": true,
-  "description": "React based interface for the Chunker electron app.",
+  "description": "React interface for Bridger.",
   "author": "Zerix Network",
   "license": "MIT",
   "homepage": "./",

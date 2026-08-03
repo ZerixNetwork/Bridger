@@ -76,7 +76,7 @@ const createWindow = () => {
 
     // Start the window
     const window = new BrowserWindow({
-        title: "Chunker...",
+        title: "Bridger",
         width: 1280,
         height: 800,
         minWidth: 560,

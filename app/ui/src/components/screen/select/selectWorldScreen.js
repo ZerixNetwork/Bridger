@@ -77,7 +77,7 @@ export class SelectWorldScreen extends BaseScreen {
             return;
         }
         if (!window.chunker?.getPathForFile) {
-            this.app.showError("Desktop app required", "World conversion requires the Chunker desktop app. Schematic preview works in the browser.", null, undefined, true);
+            this.app.showError("Desktop app required", "World conversion requires the Bridger desktop app. Schematic preview works in the browser.", null, undefined, true);
             return;
         }
 
@@ -298,9 +298,9 @@ export class SelectWorldScreen extends BaseScreen {
                 } else if (errorCode === 408) {
                     self.app.showError("Failed to connect to backend", "Your connection timed out, please ensure you're on a stable connection.", null, undefined, false, true);
                 } else if (errorCode === -100) {
-                    self.app.showError("Failed to connect to backend", "Unable to run chunker-cli backend, please try closing Chunker and opening it again.", null, undefined, false, true);
+                    self.app.showError("Failed to connect to backend", "Unable to run the conversion backend. Try closing Bridger and opening it again.", null, undefined, false, true);
                 } else if (errorCode === 1) {
-                    self.app.showError("Failed to connect to backend", "The backend process was killed unexpectedly, please try closing Chunker and opening it again.", null, undefined, false, true);
+                    self.app.showError("Failed to connect to backend", "The backend process stopped unexpectedly. Try closing Bridger and opening it again.", null, undefined, false, true);
                 } else if (errorCode === 12) {
                     self.app.showError("Out of memory", "Your system ran out of memory while converting, please try again, use a smaller world or try a different machine.", null, undefined, false, true);
                 } else {

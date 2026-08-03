@@ -1,8 +1,10 @@
 <p align="center">
-  <img src="app/ui/public/images/zerix/logo.png" alt="Zerix" width="420">
+  <img src="app/ui/public/images/zerix/logo.png" alt="Zerix Network" width="180">
 </p>
 
-<h1 align="center">Zerix Chunker</h1>
+<h1 align="center">Bridger</h1>
+
+<p align="center"><strong>by Zerix Network</strong></p>
 
 <p align="center">
   Convert Minecraft worlds between Java Edition and Bedrock Edition, and preview schematic files locally.
@@ -16,11 +18,11 @@
 </p>
 
 > [!WARNING]
-> Zerix Chunker is under active development. Back up important worlds before converting them.
+> Bridger is under active development. Back up important worlds before converting them.
 
 ## About
 
-Zerix Chunker is a community-maintained fork of [Hive Games' Chunker](https://github.com/HiveGamesOSS/Chunker). It keeps the original Java/Bedrock world converter and adds a schematic viewer to the desktop interface.
+Bridger is a community-maintained fork of [Hive Games' Chunker](https://github.com/HiveGamesOSS/Chunker), developed by Zerix Network. It keeps the original Java/Bedrock world converter and adds a schematic viewer to the desktop interface.
 
 The project was started by **SuperDoduos** for Zerix Network after needing a quicker way to inspect schematic map files before importing them into Minecraft.
 
@@ -138,8 +140,8 @@ Run the JAR with `--help` to see all available mapping and converter options.
 The desktop application normally allows the backing JVM to use up to 75% of available memory. Memory and other JVM options can be passed when launching it:
 
 ```powershell
-Zerix-Chunker.exe -Xmx8G
-Zerix-Chunker.exe --java-options="-Xms2G -Xmx8G"
+Bridger.exe -Xmx8G
+Bridger.exe --java-options="-Xms2G -Xmx8G"
 ```
 
 ## Current limitations
@@ -160,7 +162,7 @@ Please do not commit API keys, private data, world files you cannot redistribute
 
 ## Credits
 
-Zerix Chunker is maintained by **Zerix Network** and was founded by **SuperDoduos**.
+Bridger is maintained by **Zerix Network** and was founded by **SuperDoduos**.
 
 It is based on [Chunker](https://github.com/HiveGamesOSS/Chunker), created by Hive Games and its contributors. The project also retains Chunker's [LevelDB implementation](https://github.com/HiveGamesOSS/leveldb-mcpe-java/) and original [dependency graph](https://github.com/HiveGamesOSS/Chunker/network/dependencies).
 
@@ -168,10 +170,10 @@ It is based on [Chunker](https://github.com/HiveGamesOSS/Chunker), created by Hi
 
 The build prepares block textures from Mojang's official Minecraft client for use only inside the schematic preview. Users may also select a compatible custom resource pack locally.
 
-Minecraft textures and other game assets are not covered by this repository's MIT License. Minecraft is a trademark of Microsoft Corporation. Zerix Chunker is not affiliated with or endorsed by Mojang Studios or Microsoft.
+Minecraft textures and other game assets are not covered by this repository's MIT License. Minecraft is a trademark of Microsoft Corporation. Bridger is not affiliated with or endorsed by Mojang Studios or Microsoft.
 
 ## License
 
 The software is distributed under the [MIT License](LICENSE). The original Hive Games copyright and permission notice must remain included in copies or substantial portions of the software.
 
-Zerix Chunker is an independent fork and is not affiliated with or endorsed by Hive Games.
+Bridger is an independent Zerix Network fork and is not affiliated with or endorsed by Hive Games.
