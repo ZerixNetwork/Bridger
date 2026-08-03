@@ -71,6 +71,15 @@ export class SelectWorldScreen extends BaseScreen {
     handleData = (files) => {
         let self = this;
 
+        if (files.length === 1 && /\.(schematic|schem|nbt|mcstructure)$/i.test(files[0].file.name)) {
+            this.app.setState({pendingSchematicFile: files[0].file}, () => this.app.setScreen(SchematicScreen));
+            return;
+        }
+        if (!window.chunker?.getPathForFile) {
+            this.app.showError("Desktop app required", "World conversion requires the Chunker desktop app. Schematic preview works in the browser.", null, undefined, true);
+            return;
+        }
+
         if (files.length > 1) {
             this.setState({
                 selected: files[0].path.split('/')[1],

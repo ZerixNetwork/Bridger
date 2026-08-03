@@ -5,8 +5,20 @@ export async function readNbt(file) {
     if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
         const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
         bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    } else if (bytes[0] === 0x78) {
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+        bytes = new Uint8Array(await new Response(stream).arrayBuffer());
     }
-    return parse(bytes, file.name.toLowerCase().endsWith(".mcstructure"));
+    const littleEndian = file.name.toLowerCase().endsWith(".mcstructure");
+    try {
+        return parse(bytes, littleEndian);
+    } catch (firstError) {
+        try {
+            return parse(bytes, !littleEndian);
+        } catch {
+            throw firstError;
+        }
+    }
 }
 
 function parse(bytes, littleEndian) {
@@ -62,21 +74,48 @@ function parse(bytes, littleEndian) {
     return payload(rootType);
 }
 
-export function toSchematic(root) {
+export function toSchematic(root, legacyBlocks = {}) {
     root = root.Schematic || root;
-    if (root.Width !== undefined && root.Blocks) return legacy(root);
+    if (root.Width !== undefined && root.Blocks) return legacy(root, legacyBlocks);
     if (root.Width !== undefined && root.Palette && root.BlockData) return sponge(root);
     if (root.size && root.palette && root.blocks) return javaStructure(root);
     if (root.size && root.structure?.block_indices) return bedrockStructure(root);
     throw new Error("Unsupported schematic structure");
 }
 
-function legacy(root) {
+function legacy(root, legacyBlocks) {
     const ids = root.Blocks.map(id => id & 255);
-    const palette = Array.from(new Set(ids)).map(id => "Block " + id);
-    const lookup = new Map(palette.map((name, i) => [Number(name.slice(6)), i]));
-    return result(root.Width, root.Height, root.Length, ids.map(id => lookup.get(id)), palette);
+    const data = root.Data?.map(value => value & 15) || Array(ids.length).fill(0);
+    const embedded = root.SchematicaMapping || root.BlockIDs || {};
+    const names = new Map(Object.entries(embedded).map(([name, id]) => [id, name.includes(":") ? name : "minecraft:" + name]));
+    const states = ids.map((id, index) => `${id}:${data[index]}`);
+    const unique = Array.from(new Set(states));
+    const palette = unique.map(state => {
+        const id = Number(state.split(":")[0]);
+        return legacyBlocks[state] || names.get(id) || LEGACY_BLOCKS[id] || "Block " + state;
+    });
+    const lookup = new Map(unique.map((state, i) => [state, i]));
+    return result(root.Width, root.Height, root.Length, states.map(state => lookup.get(state)), palette);
 }
+
+const LEGACY_BLOCKS = {
+    0: "minecraft:air", 1: "minecraft:stone", 2: "minecraft:grass_block", 3: "minecraft:dirt",
+    4: "minecraft:cobblestone", 5: "minecraft:oak_planks", 7: "minecraft:bedrock", 8: "minecraft:water",
+    9: "minecraft:water", 10: "minecraft:lava", 11: "minecraft:lava", 12: "minecraft:sand",
+    13: "minecraft:gravel", 14: "minecraft:gold_ore", 15: "minecraft:iron_ore", 16: "minecraft:coal_ore",
+    17: "minecraft:oak_log", 18: "minecraft:oak_leaves", 19: "minecraft:sponge", 20: "minecraft:glass",
+    21: "minecraft:lapis_ore", 22: "minecraft:lapis_block", 24: "minecraft:sandstone", 35: "minecraft:white_wool",
+    41: "minecraft:gold_block", 42: "minecraft:iron_block", 45: "minecraft:bricks", 46: "minecraft:tnt",
+    47: "minecraft:bookshelf", 48: "minecraft:mossy_cobblestone", 49: "minecraft:obsidian", 50: "minecraft:torch",
+    56: "minecraft:diamond_ore", 57: "minecraft:diamond_block", 58: "minecraft:crafting_table",
+    73: "minecraft:redstone_ore", 79: "minecraft:ice", 80: "minecraft:snow_block", 81: "minecraft:cactus",
+    82: "minecraft:clay", 87: "minecraft:netherrack", 88: "minecraft:soul_sand", 89: "minecraft:glowstone",
+    98: "minecraft:stone_bricks", 103: "minecraft:melon", 110: "minecraft:mycelium",
+    112: "minecraft:nether_bricks", 121: "minecraft:end_stone", 129: "minecraft:emerald_ore",
+    133: "minecraft:emerald_block", 152: "minecraft:redstone_block", 155: "minecraft:quartz_block",
+    159: "minecraft:white_terracotta", 165: "minecraft:slime_block", 166: "minecraft:barrier",
+    168: "minecraft:prismarine", 169: "minecraft:sea_lantern", 172: "minecraft:terracotta"
+};
 
 function sponge(root) {
     const palette = [];

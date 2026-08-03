@@ -6,9 +6,9 @@
   "license": "MIT",
   "homepage": "./",
   "scripts": {
-    "prestart": "node scripts/process-block-data.js",
+    "prestart": "node scripts/process-block-data.js && node scripts/process-legacy-blocks.js && node scripts/process-vanilla-textures.js",
     "start": "react-scripts start",
-    "prebuild": "node scripts/process-block-data.js",
+    "prebuild": "node scripts/process-block-data.js && node scripts/process-legacy-blocks.js && node scripts/process-vanilla-textures.js",
     "build": "react-scripts build",
     "eslint": "eslint src/**/*.js",
     "test": "react-scripts test"
@@ -29,7 +29,8 @@
     "react-router-dom": "^7.15.1",
     "react-scripts": "^5.0.1",
     "react-select": "^5.10.2",
-    "seedrandom": "^3.0.5"
+    "seedrandom": "^3.0.5",
+    "three": "^0.181.2"
   },
   "eslintConfig": {
     "extends": "react-app"

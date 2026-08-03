@@ -2,6 +2,23 @@
 .schematic_viewer > .gray_box { text-align: center; width: 60%; }
 .schematic_info { display: flex; gap: 16px; align-items: baseline; }
 .schematic_info span { color: #9c3382; }
+.schematic_pack { color: #9c3382; font-weight: bold; }
+.schematic_views { margin-left: auto; display: flex; }
+.schematic_views button { padding: 8px 14px; background: #d8d9d9; color: #535353; font-weight: bold; }
+.schematic_views button.active { background: #36b14a; color: white; }
+.schematic_3d { width: 100%; flex: 1; min-height: 360px; overflow: hidden; position: relative; background: #242424; }
+.schematic_3d:focus { outline: 2px solid #36b14a; }
+.schematic_3d:fullscreen { width: 100vw; height: 100vh; min-height: 100vh; }
+.schematic_3d_canvas { width: 100%; height: 100%; }
+.schematic_3d canvas { display: block; width: 100%; height: 100%; }
+.schematic_fullscreen { position: absolute; z-index: 2; top: 12px; right: 12px; }
+.schematic_controls { position: absolute; z-index: 1; bottom: 12px; left: 50%; transform: translateX(-50%); padding: 6px 10px; background: rgba(0, 0, 0, 0.65); color: white; font-weight: bold; white-space: nowrap; }
+.schematic_3d_warning { position: absolute; z-index: 1; top: 12px; left: 50%; transform: translateX(-50%); padding: 8px 12px; background: #bd2535; color: white; font-weight: bold; text-align: center; }
+.schematic_loading { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; background: rgba(25, 25, 25, 0.88); color: white; }
+.schematic_spinner { width: 42px; height: 42px; border: 6px solid #555; border-top-color: #36b14a; border-radius: 50%; animation: schematic_spin 0.8s linear infinite; }
+@keyframes schematic_spin { to { transform: rotate(360deg); } }
+.schematic_file_loading .modal { display: flex; flex-direction: column; align-items: center; }
+.schematic_file_loading .modal h3 { margin-top: 24px; }
 .schematic_canvas { width: 100%; flex: 1; min-height: 240px; overflow: auto; background: #242424; display: grid; place-items: center; }
 .schematic_canvas canvas { width: min(70vh, 100%); height: min(70vh, 100%); object-fit: contain; image-rendering: pixelated; }
 .schematic_viewer label { width: min(600px, 100%); text-align: center; font-weight: bold; }
