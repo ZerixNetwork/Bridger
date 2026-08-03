@@ -1,0 +1,9 @@
+.schematic_viewer { flex-direction: column; gap: 18px; min-height: 0; }
+.schematic_viewer > .gray_box { text-align: center; width: 60%; }
+.schematic_info { display: flex; gap: 16px; align-items: baseline; }
+.schematic_info span { color: #9c3382; }
+.schematic_canvas { width: 100%; flex: 1; min-height: 240px; overflow: auto; background: #242424; display: grid; place-items: center; }
+.schematic_canvas canvas { width: min(70vh, 100%); height: min(70vh, 100%); object-fit: contain; image-rendering: pixelated; }
+.schematic_viewer label { width: min(600px, 100%); text-align: center; font-weight: bold; }
+.schematic_viewer input[type="range"] { display: block; width: 100%; accent-color: #36b14a; }
+.schematic_error { color: #bd2535; margin: 0; }
