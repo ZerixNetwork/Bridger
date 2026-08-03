@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ZerixNetwork/Zerix-Chunker/releases">Releases</a> ·
-  <a href="https://github.com/ZerixNetwork/Zerix-Chunker/issues">Issues</a> ·
+  <a href="https://github.com/ZerixNetwork/Bridger/releases">Releases</a> ·
+  <a href="https://github.com/ZerixNetwork/Bridger/issues">Issues</a> ·
   <a href="https://discord.gg/Jsnpvu7S5e">Discord</a> ·
   <a href="LICENSE">License</a>
 </p>
@@ -89,8 +89,8 @@ The project was started by **SuperDoduos** for Zerix Network after needing a qui
 Node.js and npm are downloaded by the included Gradle tasks when required.
 
 ```bash
-git clone https://github.com/ZerixNetwork/Zerix-Chunker.git
-cd Zerix-Chunker
+git clone https://github.com/ZerixNetwork/Bridger.git
+cd Bridger
 ```
 
 Build everything on Linux or macOS:

@@ -12,7 +12,7 @@
   },
   "keywords": [],
   "author": "Zerix Network",
-  "homepage": "https://github.com/ZerixNetwork/Zerix-Chunker",
+  "homepage": "https://github.com/ZerixNetwork/Bridger",
   "license": "MIT",
   "devDependencies": {
     "electron": "42.2.0",

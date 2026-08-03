@@ -19,7 +19,7 @@ export class Footer extends Component {
                 <nav className="footer_top">
                     <div className="wrapper">
                         <ul>
-                            <li><a href="https://github.com/ZerixNetwork/Zerix-Chunker" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                            <li><a href="https://github.com/ZerixNetwork/Bridger" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                             <li><a href="https://github.com/HiveGamesOSS/Chunker/network/dependencies" target="_blank" rel="noopener noreferrer">Dependencies</a></li>
                             <li><button onClick={() => this.setState({credits: true})}>Credits</button></li>
                             <li><a className="discord_link" href="https://discord.gg/Jsnpvu7S5e" target="_blank" rel="noopener noreferrer">

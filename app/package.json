@@ -4,7 +4,7 @@
   "description": "Parent package of the Bridger Electron app and user interface.",
   "author": "Zerix Network",
   "license": "MIT",
-  "homepage": "https://github.com/ZerixNetwork/Zerix-Chunker",
+  "homepage": "https://github.com/ZerixNetwork/Bridger",
   "scripts": {
     "start": "concurrently \"cross-env BROWSER=none npm start --prefix ui\" \"npx wait-on http://127.0.0.1:3000 && cross-env DEV_UI_URL=http://localhost:3000 DEV_CLI_EXECUTABLE=../../cli/build/libs/ npm start --prefix electron\"",
     "build": "npm run build --prefix ui && npm run publish --prefix electron"
