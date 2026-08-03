@@ -7,7 +7,7 @@
 <p align="center"><strong>by Zerix Network</strong></p>
 
 <p align="center">
-  Convert Minecraft worlds between Java Edition and Bedrock Edition, and preview schematic files locally.
+  Convert Minecraft worlds and resource packs between Java Edition and Bedrock Edition, and preview schematic files locally.
 </p>
 
 <p align="center">
@@ -30,6 +30,8 @@ The project was started by **SuperDoduos** for Zerix Network after needing a qui
 
 - Convert complete worlds between supported Java and Bedrock versions.
 - Upgrade or downgrade worlds between supported game versions.
+- Convert common block and item textures between Java and Bedrock resource packs.
+- Select source and target Minecraft versions when converting resource packs.
 - Use either the Electron desktop interface or Java CLI.
 - Preview `.schematic`, `.schem`, `.nbt` and `.mcstructure` files without converting them.
 - Switch schematic previews between textured 3D, 2D top view and individual layers.
@@ -39,6 +41,9 @@ The project was started by **SuperDoduos** for Zerix Network after needing a qui
 
 > [!NOTE]
 > The schematic feature is a viewer only. It does not currently convert schematic files into worlds or other formats.
+
+> [!WARNING]
+> Resource pack conversion is currently in alpha. Common block and item textures are mapped automatically, but models, animations, sounds, definitions and UI layouts may require manual fixes. Unmapped files are preserved inside the output archive.
 
 ## Supported world versions
 
@@ -154,6 +159,8 @@ World conversion has limited or no support for:
 
 Large schematic previews can require significant memory or graphics resources. The viewer warns before rendering files above its normal safe volume and limits a 3D preview to 250,000 visible blocks.
 
+Resource pack conversion currently focuses on common vanilla texture paths and filenames. It does not guarantee complete conversion of custom models, shaders, animations, sounds or edition-specific UI files.
+
 ## Contributing
 
 Issues and contributions are welcome. Include the source edition/version, target edition/version, reproduction steps and relevant logs when reporting conversion problems.
@@ -165,6 +172,8 @@ Please do not commit API keys, private data, world files you cannot redistribute
 Bridger is maintained by **Zerix Network** and was founded by **SuperDoduos**.
 
 It is based on [Chunker](https://github.com/HiveGamesOSS/Chunker), created by Hive Games and its contributors. The project also retains Chunker's [LevelDB implementation](https://github.com/HiveGamesOSS/leveldb-mcpe-java/) and original [dependency graph](https://github.com/HiveGamesOSS/Chunker/network/dependencies).
+
+Resource pack texture mappings include data derived from [GeyserMC PackConverter](https://github.com/GeyserMC/PackConverter). See [third-party notices](THIRD_PARTY_NOTICES.md) for its MIT license notice.
 
 ## Minecraft textures
 

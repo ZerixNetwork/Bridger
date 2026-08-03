@@ -4,6 +4,7 @@ import {ModeScreen} from "../mode/modeScreen";
 import api from "../../../api";
 import {Round2DP} from "../../progress";
 import {SchematicScreen} from "../schematic/schematicScreen";
+import {ResourcePackScreen} from "../resourcePack/resourcePackScreen";
 
 let jokes = [
     "How does Steve stay in shape? He runs around the block.",
@@ -343,10 +344,10 @@ export class SelectWorldScreen extends BaseScreen {
                             Convert Worlds
                             <span>Java and Bedrock worlds</span>
                         </button>
-                        <button className="gray_box" disabled>
+                        <button className="gray_box" onClick={() => this.app.setScreen(ResourcePackScreen)}>
                             <img src="images/cmdblock.png" alt=""/>
                             Convert Resource Packs
-                            <span>Coming soon</span>
+                            <span>Java and Bedrock packs</span>
                         </button>
                         <button onClick={() => this.app.setScreen(SchematicScreen)} className="gray_box">
                             <img src="images/dropper.png" alt=""/>
