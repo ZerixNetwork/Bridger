@@ -205,6 +205,25 @@ img {
         flex-direction: column;
     }
 
+    #content .main_content.conversion_editions {
+        flex-direction: column;
+    }
+
+    #content .main_content.world_format_info {
+        padding: 18px 20px;
+    }
+
+    .world_format_card {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .conversion_editions .gray_box {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     .select_world .gray_box {
         width: 100%;
         margin: 5px 0;

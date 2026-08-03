@@ -841,6 +841,30 @@ input:checked + .switch:before {
     padding-bottom: 50px;
 }
 
+.launch_options .gray_box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.launch_options .gray_box img {
+    width: 64px;
+    height: 64px;
+    image-rendering: pixelated;
+}
+
+.launch_options .gray_box:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.launch_options .gray_box:disabled:hover {
+    background: #d8d9d9;
+    box-shadow: inset 7px -7px rgba(0, 0, 0, 0.05), inset -7px 7px 0 #e5e5e5;
+    color: #535353;
+}
+
 .select_world .drag_box {
     width: 68.4%;
 }
@@ -875,6 +899,88 @@ input:checked + .switch:before {
 }
 
 /*---Export---*/
+
+#content .main_content.world_format_info {
+    flex: 0 0 auto;
+    padding: 24px 50px;
+    background: #eeeeee;
+    border-top: 1px solid #e2e2e2;
+    border-bottom: 1px solid #d5d5d5;
+}
+
+.world_format_card {
+    min-width: 310px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 15px 24px 15px 16px;
+    background: #ffffff;
+    border-left: 6px solid #36b14a;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.world_format_icon {
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+    background-color: #e5e5e5;
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+}
+
+.world_format_card.java .world_format_icon { background-image: url("../images/grass.png"); }
+.world_format_card.bedrock .world_format_icon { background-image: url("../images/bedrock.png"); }
+
+.world_format_card > div:last-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.world_format_card strong {
+    font-size: 18px;
+    color: #333333;
+}
+
+.world_format_card .world_format_label {
+    color: #777777;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.world_format_card .world_format_version {
+    color: #9c3382;
+    font-weight: bold;
+}
+
+#content .main_content.conversion_editions {
+    justify-content: center;
+    gap: 30px;
+    flex-grow: 0;
+}
+
+.conversion_editions .gray_box {
+    width: min(360px, 45%);
+    padding: 40px 25px 40px 105px;
+    text-align: left;
+}
+
+.conversion_editions .gray_box:before {
+    content: "";
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    left: 24px;
+    top: 28px;
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+}
+
+.conversion_editions .bedrock:before { background-image: url("../images/bedrock.png"); }
+.conversion_editions .java:before { background-image: url("../images/grass.png"); }
 
 #content .main_content.export {
     display: grid;

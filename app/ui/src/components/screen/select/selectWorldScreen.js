@@ -25,7 +25,8 @@ export class SelectWorldScreen extends BaseScreen {
         processing: false,
         processingPercentage: 0,
         dragging: false,
-        draggingOverBox: false
+        draggingOverBox: false,
+        mode: undefined
     };
     fileInput = undefined;
     folderInput = undefined;
@@ -187,6 +188,7 @@ export class SelectWorldScreen extends BaseScreen {
 
     onDragEnter = (e) => {
         e.preventDefault();
+        if (this.state.mode !== "world") return;
         this.target = e.target;
         this.setState({dragging: true});
     };
@@ -276,6 +278,8 @@ export class SelectWorldScreen extends BaseScreen {
         this.setState({selected: false, detecting: false, processing: false});
     };
 
+    backToMenu = () => this.setState({mode: undefined, selected: false});
+
     makeConnection = (callback) => {
         let self = this;
         let ignoreError = false;
@@ -329,10 +333,29 @@ export class SelectWorldScreen extends BaseScreen {
         return (
             <div className={"maincol"}>
                 <div className="topbar">
-                    <h1>Select World</h1>
-                    <h2>Select your world folder or archive.</h2>
+                    <h1>{this.state.mode === "world" ? "Convert Worlds" : "Choose a tool"}</h1>
+                    <h2>{this.state.mode === "world" ? "Select your world folder or archive." : "What would you like to do?"}</h2>
                 </div>
-                {!this.state.selected && !this.state.dragging &&
+                {!this.state.mode &&
+                    <div className="main_content select_world launch_options">
+                        <button onClick={() => this.setState({mode: "world"})} className="gray_box">
+                            <img src="images/furnace.png" alt=""/>
+                            Convert Worlds
+                            <span>Java and Bedrock worlds</span>
+                        </button>
+                        <button className="gray_box" disabled>
+                            <img src="images/cmdblock.png" alt=""/>
+                            Convert Resource Packs
+                            <span>Coming soon</span>
+                        </button>
+                        <button onClick={() => this.app.setScreen(SchematicScreen)} className="gray_box">
+                            <img src="images/dropper.png" alt=""/>
+                            Preview Schematics
+                            <span>Java and Bedrock structures</span>
+                        </button>
+                    </div>
+                }
+                {this.state.mode === "world" && !this.state.selected && !this.state.dragging &&
                     <div className="main_content select_world">
                         <button onClick={this.showFolderBrowser} className="gray_box">
                             Choose world folder
@@ -342,13 +365,9 @@ export class SelectWorldScreen extends BaseScreen {
                             Select archive
                             <span>Supported types: .zip, .mcworld</span>
                         </button>
-                        <button onClick={() => this.app.setScreen(SchematicScreen)} className="gray_box">
-                            Preview schematic
-                            <span>Java and Bedrock structures</span>
-                        </button>
                     </div>
                 }
-                {!this.state.selected && this.state.dragging &&
+                {this.state.mode === "world" && !this.state.selected && this.state.dragging &&
                     <div className="main_content select_world">
                         <button
                             className={"gray_box drag_box" + (this.state.draggingOverBox ? " dragged_over" : "")}
@@ -390,7 +409,8 @@ export class SelectWorldScreen extends BaseScreen {
                         <p>{this.joke}</p>
                     </div>
                 }
-                <div className="bottombar">
+                {this.state.mode === "world" && <div className="bottombar">
+                    {!this.state.selected && <button className="button red" onClick={this.backToMenu}>Back</button>}
                     {this.state.selected && !this.state.processing && !this.state.detecting &&
                         <button className="button red" onClick={this.cancel}>Cancel</button>
                     }
@@ -399,7 +419,7 @@ export class SelectWorldScreen extends BaseScreen {
                         disabled={this.state.detecting || !this.state.selected || this.state.processing}
                         onClick={this.startSession}>Start
                     </button>
-                </div>
+                </div>}
             </div>
         );
     }
