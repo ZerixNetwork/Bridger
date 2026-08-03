@@ -2,7 +2,7 @@
   "name": "chunker-ui",
   "private": true,
   "description": "React based interface for the Chunker electron app.",
-  "author": "Hive Games Limited <chunker-public@hivemc.com>",
+  "author": "Zerix Network",
   "license": "MIT",
   "homepage": "./",
   "scripts": {

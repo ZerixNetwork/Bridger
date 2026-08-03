@@ -1,144 +1,177 @@
-# Chunker
+<p align="center">
+  <img src="app/ui/public/images/zerix/logo.png" alt="Zerix" width="420">
+</p>
 
-**Convert Minecraft worlds between Java Edition and Bedrock Edition**
+<h1 align="center">Zerix Chunker</h1>
 
-Chunker is a Java application which allows you to convert Java and Bedrock Minecraft worlds. It provides a simple
-interface for converting worlds and allows you to upgrade and downgrade worlds between different versions of the
-game.
+<p align="center">
+  Convert Minecraft worlds between Java Edition and Bedrock Edition, and preview schematic files locally.
+</p>
 
-Supported Formats:
+<p align="center">
+  <a href="https://github.com/ZerixNetwork/Zerix-Chunker/releases">Releases</a> ·
+  <a href="https://github.com/ZerixNetwork/Zerix-Chunker/issues">Issues</a> ·
+  <a href="https://discord.gg/Jsnpvu7S5e">Discord</a> ·
+  <a href="LICENSE">License</a>
+</p>
 
-- Bedrock
-    - 1.12.0
-    - 1.13.0
-    - 1.14.0 - 1.14.60
-    - 1.16.0 - 1.16.220
-    - 1.17.0 - 1.17.40
-    - 1.18.0 - 1.18.30
-    - 1.19.0 - 1.19.80
-    - 1.20.0 - 1.20.80
-    - 1.21.0 - 1.21.130
-    - 1.26.0 - 1.26.30
-- Java
-    - 1.8.8
-    - 1.9.0 - 1.9.3
-    - 1.10.0 - 1.10.2
-    - 1.11.0 - 1.11.2
-    - 1.12.0 - 1.12.2
-    - 1.13.0 - 1.13.2
-    - 1.14.0 - 1.14.4
-    - 1.15.0 - 1.15.2
-    - 1.16.0 - 1.16.5
-    - 1.17.0 - 1.17.1
-    - 1.18.0 - 1.18.2
-    - 1.19.0 - 1.19.4
-    - 1.20.0 - 1.20.6
-    - 1.21.0 - 1.21.11
-    - 26.1 - 26.2
+> [!WARNING]
+> Zerix Chunker is under active development. Back up important worlds before converting them.
 
-**Microsoft Creator Docs:**
-https://learn.microsoft.com/en-us/minecraft/creator/documents/chunkeroverview?view=minecraft-bedrock-stable
+## About
 
-App Usage
---------
+Zerix Chunker is a community-maintained fork of [Hive Games' Chunker](https://github.com/HiveGamesOSS/Chunker). It keeps the original Java/Bedrock world converter and adds a schematic viewer to the desktop interface.
 
-You can find pre-built copies of Chunker in the [releases section](https://github.com/HiveGamesOSS/Chunker/releases).
-Otherwise, see the building section on how to build Chunker yourself.
+The project was started by **SuperDoduos** for Zerix Network after needing a quicker way to inspect schematic map files before importing them into Minecraft.
 
-Download the appropriate version of the application depending on your operating system and then you will be able to run
-the electron based frontend for Chunker.
+## Features
 
-Chunker defaults to a maximum of 75% of available memory, you can customise this by specifying the amount when launching
-Chunker e.g. `Chunker.exe -Xmx8G` for 8 gigabytes.
+- Convert complete worlds between supported Java and Bedrock versions.
+- Upgrade or downgrade worlds between supported game versions.
+- Use either the Electron desktop interface or Java CLI.
+- Preview `.schematic`, `.schem`, `.nbt` and `.mcstructure` files without converting them.
+- Switch schematic previews between textured 3D, 2D top view and individual layers.
+- Load bundled Minecraft textures or a custom Java resource pack in the 3D viewer.
+- Explore 3D previews with mouse controls, WASD movement and fullscreen mode.
+- Configure block mappings, dimensions, pruning and other conversion settings.
 
-Chunker forwards `-Xmx` and `-Xms` to the backing JVM, if you wish to supply other options use `--java-options="..."`.
+> [!NOTE]
+> The schematic feature is a viewer only. It does not currently convert schematic files into worlds or other formats.
 
-CLI Usage
---------
+## Supported world versions
 
-**Requirements**
+<details>
+<summary><strong>Bedrock Edition</strong></summary>
 
-- Java 17 or higher
+- 1.12.0
+- 1.13.0
+- 1.14.0–1.14.60
+- 1.16.0–1.16.220
+- 1.17.0–1.17.40
+- 1.18.0–1.18.30
+- 1.19.0–1.19.80
+- 1.20.0–1.20.80
+- 1.21.0–1.21.130
+- 1.26.0–1.26.30
 
-You can find pre-built copies of Chunker in the [releases section](https://github.com/HiveGamesOSS/Chunker/releases).
-Otherwise, see the building section on how to build Chunker yourself.
+</details>
 
-Chunker can be run as a command-line application or as a UI, to use Chunker as a command line application run it as so:
+<details>
+<summary><strong>Java Edition</strong></summary>
 
-`java -jar chunker-cli-VERSION.jar -i "my_world" -f BEDROCK_1_20_80 -o output`
+- 1.8.8
+- 1.9.0–1.9.3
+- 1.10.0–1.10.2
+- 1.11.0–1.11.2
+- 1.12.0–1.12.2
+- 1.13.0–1.13.2
+- 1.14.0–1.14.4
+- 1.15.0–1.15.2
+- 1.16.0–1.16.5
+- 1.17.0–1.17.1
+- 1.18.0–1.18.2
+- 1.19.0–1.19.4
+- 1.20.0–1.20.6
+- 1.21.0–1.21.11
+- 26.1–26.2
 
-The following parameters are required:
+</details>
 
-- `-i` / `--inputDirectory` - the path relative to the application which should be used as the input directory.
-- `-o` / `--outputDirectory` - the path relative to the application which should be used as the output directory.
-- `-f` / `--outputFormat` - the output format to convert the world to in the form `EDITION_X_Y_Z`,
-  e.g. `JAVA_1_20_5`, `JAVA_1_20`, `BEDROCK_1_19_30`.
+## Building
 
-Additionally, the following parameters are supported:
-
-- `-m` / `--blockMappings` - a path to a json file or a json object containing block mappings.
-- `-s` / `--worldSettings` - a path to a json file or a json object containing world settings.
-- `-p` / `--pruning` - a path to a json file or a json object containing pruning settings.
-- `-c` / `--converterSettings` - a path to a json file or a json object containing converter settings.
-- `-d` / `--dimensionMappings` - a path to a json file or a json object containing dimension mappings.
-- `-k` / `--keepOriginalNBT` - indicates that NBT should be copied from the input to output where processed by Chunker,
-  this is only supported where the output format is the same as the input and for optimal results you will want to copy
-  the input world to the output folder prior to conversion.
-
-You can export settings for your world by using the web interface on `https://chunker.app` through the Advanced
-Settings -> Converter Settings tab, the CLI also supports preloading settings from the input directory.
-
-You can also get Chunker to list available formats by providing an incorrect input,
-e.g. `java -jar chunker-VERSION.jar -f ?`.
-
-Building
---------
-
-**Requirements**
+### Requirements
 
 - Git
-- Java 17 or higher
-- Gradle (Optional)
+- Java 17 or newer
 
-**Note:** Chunker is split into `app` and `cli`, the app provides an electron frontend for the application and the cli
-is a pure java application which can be used for conversion / integrating conversion.
+Node.js and npm are downloaded by the included Gradle tasks when required.
 
-**Steps**
+```bash
+git clone https://github.com/ZerixNetwork/Zerix-Chunker.git
+cd Zerix-Chunker
+```
 
-1. Clone this repository via `git clone git://github.com/HiveGamesOSS/Chunker.git`.
-2. Build the project via `./gradlew build`.
-3. Obtain the binary from `build/libs/` (either as a CLI jar, native CLI executable or with the electron frontend).
+Build everything on Linux or macOS:
 
-Chunker also uses its own fork of a Java LevelDB implementation, https://github.com/HiveGamesOSS/leveldb-mcpe-java/.
+```bash
+./gradlew build
+```
 
-Testing
---------
+Build everything on Windows:
 
-Chunker attempts to do automated testing where possible to validate data, an example of this is block identifiers are
-validated against the palette of the Bedrock and Java, this allows issues with faulty mappings to be identified in the
-build process. You can skip tests in the build process by appending `-x test` to the `./gradlew build` command.
+```powershell
+.\gradlew.bat build
+```
 
-Some tests have been excluded from the default test suite marked with the "LongRunning" tag, this is because they can
-take several minutes to fully complete.
+Useful targeted commands:
 
+| Purpose | Linux/macOS | Windows |
+| --- | --- | --- |
+| Start the desktop app in development | `./gradlew app:start` | `.\gradlew.bat app:start` |
+| Package the desktop app | `./gradlew app:build` | `.\gradlew.bat app:build` |
+| Build the CLI | `./gradlew cli:build` | `.\gradlew.bat cli:build` |
+| Run tests | `./gradlew cli:test` | `.\gradlew.bat cli:test` |
 
-Currently unsupported features
---------
-The following features do not convert (or have limited conversion) when using Chunker:
+Generated artifacts are written under `build/libs/`, `cli/build/libs/` and `app/electron/dist/`, depending on the selected task.
 
-- Entities (excluding paintings / item frames).
-- Structure data (e.g. Villages / Strongholds).
+## CLI
 
-License and Legal
---------
+After building the CLI:
 
-The project is MIT licensed you can find details in the [LICENSE](LICENSE).
+```bash
+java -jar cli/build/libs/chunker-cli-VERSION.jar \
+  --inputDirectory "my_world" \
+  --outputFormat BEDROCK_R20_80 \
+  --outputDirectory "output"
+```
 
-This project is maintained by Hive Games. This project receives funding from Mojang Studios. Mojang Studios and it's
-parent company Microsoft assume no responsibility for the contents of this project.
+Required options:
 
-We're hiring!
---------
+| Short | Long | Description |
+| --- | --- | --- |
+| `-i` | `--inputDirectory` | World directory to read. |
+| `-f` | `--outputFormat` | Target format, such as `JAVA_1_20_5` or `BEDROCK_R20_80`. |
+| `-o` | `--outputDirectory` | Directory where the converted world is written. |
 
-Join Hive Games, the company that maintains Chunker, 'The Hive' Minecraft featured server, and more!
-[Check out our hiring page.](https://jobs.playhive.com/software-engineer-java-186860/)
+Run the JAR with `--help` to see all available mapping and converter options.
+
+The desktop application normally allows the backing JVM to use up to 75% of available memory. Memory and other JVM options can be passed when launching it:
+
+```powershell
+Zerix-Chunker.exe -Xmx8G
+Zerix-Chunker.exe --java-options="-Xms2G -Xmx8G"
+```
+
+## Current limitations
+
+World conversion has limited or no support for:
+
+- most entities, apart from supported cases such as paintings and item frames;
+- generated structure data such as villages and strongholds;
+- custom or third-party data without an equivalent in the target edition.
+
+Large schematic previews can require significant memory or graphics resources. The viewer warns before rendering files above its normal safe volume and limits a 3D preview to 250,000 visible blocks.
+
+## Contributing
+
+Issues and contributions are welcome. Include the source edition/version, target edition/version, reproduction steps and relevant logs when reporting conversion problems.
+
+Please do not commit API keys, private data, world files you cannot redistribute or copyrighted game assets without permission.
+
+## Credits
+
+Zerix Chunker is maintained by **Zerix Network** and was founded by **SuperDoduos**.
+
+It is based on [Chunker](https://github.com/HiveGamesOSS/Chunker), created by Hive Games and its contributors. The project also retains Chunker's [LevelDB implementation](https://github.com/HiveGamesOSS/leveldb-mcpe-java/) and original [dependency graph](https://github.com/HiveGamesOSS/Chunker/network/dependencies).
+
+## Minecraft textures
+
+The build prepares block textures from Mojang's official Minecraft client for use only inside the schematic preview. Users may also select a compatible custom resource pack locally.
+
+Minecraft textures and other game assets are not covered by this repository's MIT License. Minecraft is a trademark of Microsoft Corporation. Zerix Chunker is not affiliated with or endorsed by Mojang Studios or Microsoft.
+
+## License
+
+The software is distributed under the [MIT License](LICENSE). The original Hive Games copyright and permission notice must remain included in copies or substantial portions of the software.
+
+Zerix Chunker is an independent fork and is not affiliated with or endorsed by Hive Games.

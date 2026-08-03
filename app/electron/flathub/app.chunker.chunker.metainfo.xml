@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
   <id>app.chunker.chunker</id>
-  <name>Chunker</name>
+  <name>Zerix Chunker</name>
   <developer id="app.chunker">
-    <name>Hive Games</name>
+    <name>Zerix Network</name>
   </developer>
   <summary>Convert Minecraft worlds between editions</summary>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
-  <url type="homepage">https://chunker.app</url>
-  <url type="vcs-browser">https://github.com/HiveGamesOSS/Chunker</url>
-  <url type="contribute">https://github.com/HiveGamesOSS/Chunker/blob/main/CONTRIBUTING.md</url>
-  <url type="bugtracker">https://github.com/HiveGamesOSS/Chunker/issues</url>
+  <url type="homepage">https://github.com/ZerixNetwork/Zerix-Chunker</url>
+  <url type="vcs-browser">https://github.com/ZerixNetwork/Zerix-Chunker</url>
+  <url type="contribute">https://github.com/ZerixNetwork/Zerix-Chunker/blob/main/CONTRIBUTING.md</url>
+  <url type="bugtracker">https://github.com/ZerixNetwork/Zerix-Chunker/issues</url>
   <url type="help">https://learn.microsoft.com/en-us/minecraft/creator/documents/chunkeroverview?view=minecraft-bedrock-stable</url>
   <description>
     <p>WARNING: This flatpak is maintained by the Flathub community, and is not necessarily endorsed or officially maintained by the upstream developers.</p>

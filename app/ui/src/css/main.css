@@ -769,7 +769,8 @@ input:checked + .switch:before {
     display: flex;
 }
 
-#footer .footer_top ul li a {
+#footer .footer_top ul li a,
+#footer .footer_top ul li button {
     font: 16px/1.2em 'MetropolisBold', Arial, sans-serif;
     color: #797979;
     text-transform: uppercase;
@@ -777,8 +778,20 @@ input:checked + .switch:before {
     display: block;
 }
 
-#footer .footer_top ul li a:hover {
+#footer .footer_top ul li a:hover,
+#footer .footer_top ul li button:hover {
     color: #2889c6;
+}
+
+#footer .discord_link {
+    display: flex !important;
+    align-items: center;
+    gap: 7px;
+}
+
+#footer .discord_link svg {
+    width: 20px;
+    height: 20px;
 }
 
 #footer .footer_bottom {
@@ -789,6 +802,20 @@ input:checked + .switch:before {
 
 #footer .footer_bottom img {
     margin: 5px 20px 0 0;
+}
+
+.zerix_brand {
+    margin: 5px 20px 0 0;
+}
+
+.zerix_brand img {
+    width: 120px;
+    height: auto;
+    margin: 0 !important;
+}
+
+.credits_modal {
+    max-width: 650px;
 }
 
 #footer .footer_bottom .copy {

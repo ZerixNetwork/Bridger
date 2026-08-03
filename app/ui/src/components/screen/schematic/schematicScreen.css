@@ -6,6 +6,9 @@
 .schematic_views { margin-left: auto; display: flex; }
 .schematic_views button { padding: 8px 14px; background: #d8d9d9; color: #535353; font-weight: bold; }
 .schematic_views button.active { background: #36b14a; color: white; }
+.schematic_2d_controls { display: flex; }
+.schematic_2d_controls button { padding: 10px 18px; background: #d8d9d9; color: #535353; font-weight: bold; }
+.schematic_2d_controls button.active { background: #36b14a; color: white; }
 .schematic_3d { width: 100%; flex: 1; min-height: 360px; overflow: hidden; position: relative; background: #242424; }
 .schematic_3d:focus { outline: 2px solid #36b14a; }
 .schematic_3d:fullscreen { width: 100vw; height: 100vh; min-height: 100vh; }

@@ -14,7 +14,7 @@ export class SchematicScreen extends BaseScreen {
     state = {
         schematic: null, name: "", layer: 0, view: "3d", allowLarge3D: false,
         showLarge3DWarning: false, texturePack: null, texturePackName: "", textureStatus: "",
-        loadingSchematic: false, loadingName: "", revision: 0, error: null
+        loadingSchematic: false, loadingName: "", layerMode: false, revision: 0, error: null
     };
     input = React.createRef();
     canvas = React.createRef();
@@ -60,7 +60,7 @@ export class SchematicScreen extends BaseScreen {
     };
 
     draw = () => {
-        const {schematic, layer} = this.state;
+        const {schematic, layer, layerMode} = this.state;
         const canvas = this.canvas.current;
         if (!schematic || !canvas) return;
         canvas.width = schematic.width;
@@ -68,8 +68,19 @@ export class SchematicScreen extends BaseScreen {
         const context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
         for (let z = 0; z < schematic.length; z++) for (let x = 0; x < schematic.width; x++) {
-            const color = blockColor(schematic.palette[schematic.blocks[schematic.index(x, layer, z)]]);
-            if (color) { context.fillStyle = color; context.fillRect(x, z, 1, 1); }
+            if (layerMode) {
+                const color = blockColor(schematic.palette[schematic.blocks[schematic.index(x, layer, z)]]);
+                if (color) { context.fillStyle = color; context.fillRect(x, z, 1, 1); }
+                continue;
+            }
+            for (let y = schematic.height - 1; y >= 0; y--) {
+                const color = blockColor(schematic.palette[schematic.blocks[schematic.index(x, y, z)]]);
+                if (color) {
+                    context.fillStyle = color;
+                    context.fillRect(x, z, 1, 1);
+                    break;
+                }
+            }
         }
     };
 
@@ -180,8 +191,14 @@ export class SchematicScreen extends BaseScreen {
                     {this.state.view === "3d" && <Schematic3D key={this.state.revision} schematic={s}
                                                                      textures={this.state.texturePack} allowLarge={this.state.allowLarge3D}/>}
                     {this.state.view === "2d" && <>
+                        <div className="schematic_2d_controls">
+                            <button className={!this.state.layerMode ? "active" : ""}
+                                    onClick={() => this.setState({layerMode: false}, this.draw)}>Top view</button>
+                            <button className={this.state.layerMode ? "active" : ""}
+                                    onClick={() => this.setState({layerMode: true}, this.draw)}>Layer</button>
+                        </div>
                         <div className="schematic_canvas"><canvas ref={this.canvas}/></div>
-                        <label>Layer {this.state.layer + 1} / {s.height}<input type="range" min="0" max={s.height - 1} value={this.state.layer} onChange={this.setLayer}/></label>
+                        {this.state.layerMode && <label>Layer {this.state.layer + 1} / {s.height}<input type="range" min="0" max={s.height - 1} value={this.state.layer} onChange={this.setLayer}/></label>}
                     </>}
                 </>}
             </div>

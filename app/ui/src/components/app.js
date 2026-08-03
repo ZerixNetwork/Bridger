@@ -278,7 +278,7 @@ export class App extends Component {
         }
         let description = (error ? encodeURIComponent("Error Displayed: `" + error + "`\n" + (stackTrace ? "Stack Trace: \n```\n" + stackTrace + "```\n" : "")) : "");
 
-        return "https://github.com/HiveGamesOSS/Chunker/issues/new?assignees=&labels=Conversion+Bug&projects=&template=world_conversion_issue.yml" +
+        return "https://github.com/ZerixNetwork/Zerix-Chunker/issues/new?assignees=&labels=Conversion+Bug&projects=&template=world_conversion_issue.yml" +
             "&version=" + version +
             "&platform=" + platform +
             "&input_version=" + inputVersion +

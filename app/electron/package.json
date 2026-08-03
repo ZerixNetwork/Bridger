@@ -11,8 +11,8 @@
     "publish": "node src/hook/pre-build.js && electron-builder"
   },
   "keywords": [],
-  "author": "Hive Games Limited <chunker-public@hivemc.com>",
-  "homepage": "https://github.com/HiveGamesOSS/Chunker",
+  "author": "Zerix Network",
+  "homepage": "https://github.com/ZerixNetwork/Zerix-Chunker",
   "license": "MIT",
   "devDependencies": {
     "electron": "42.2.0",
@@ -21,9 +21,9 @@
   },
   "build": {
     "npmRebuild": false,
-    "productName": "Chunker",
+    "productName": "Zerix Chunker",
     "appId": "app.Chunker",
-    "icon": "../ui/build/favicon.png",
+    "icon": "../ui/build/images/zerix/icon.png",
     "win": {
       "target": [
         "portable",
