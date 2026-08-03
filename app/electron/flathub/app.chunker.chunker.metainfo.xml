@@ -38,6 +38,7 @@
   <content_rating type="oars-1.1"/>
   <launchable type="desktop-id">app.chunker.chunker.desktop</launchable>
   <releases>
+    <release version="1.19.0-alpha.1" date="2026-08-03" type="development" />
     <release version="1.18.1" date="2026-06-04" />
     <release version="1.18.0" date="2026-06-03" />
     <release version="1.17.0" date="2026-04-22" />

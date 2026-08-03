@@ -36,7 +36,7 @@ dependencies {
 }
 
 group = "com.hivemc.chunker"
-version = "1.18.1"
+version = "1.19.0-alpha.1"
 description = "chunker"
 base.archivesName = "chunker-cli"
 
@@ -177,7 +177,7 @@ tasks.jpackage {
     type = ImageType.APP_IMAGE
     input = layout.buildDirectory.dir("libs/input")
     destination = layout.buildDirectory.dir("libs").get().dir("packaged")
-    appVersion = version.toString().replace("-SNAPSHOT", "")
+    appVersion = version.toString().substringBefore("-")
 
     appName = "chunker-cli"
     vendor = "hivegames.io"

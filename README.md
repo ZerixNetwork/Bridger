@@ -7,6 +7,10 @@
 <p align="center"><strong>by Zerix Network</strong></p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/release-ALPHA-f0b429?style=for-the-badge" alt="Alpha release">
+</p>
+
+<p align="center">
   Convert Minecraft worlds and resource packs between Java Edition and Bedrock Edition, and preview schematic files locally.
 </p>
 
