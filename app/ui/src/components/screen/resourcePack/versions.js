@@ -12,7 +12,8 @@ export const JAVA_VERSIONS = [
     {id: "1.21.9–1.21.10", format: [69, 0]},
     {id: "1.21.11", format: [75, 0]},
     {id: "26.1", format: [84, 0]},
-    {id: "26.2", format: [88, 0]}
+    {id: "26.2", format: [88, 0]},
+    {id: "26.3", format: [97, 1]}
 ];
 
 export const BEDROCK_VERSIONS = [
@@ -22,7 +23,8 @@ export const BEDROCK_VERSIONS = [
     {id: "1.21.80", engine: [1, 21, 80]},
     {id: "1.21.130", engine: [1, 21, 130]},
     {id: "1.26.0", engine: [1, 26, 0]},
-    {id: "1.26.30", engine: [1, 26, 30]}
+    {id: "1.26.30", engine: [1, 26, 30]},
+    {id: "1.26.50", engine: [1, 26, 50]}
 ];
 
 export const versionsFor = edition => edition === "java" ? JAVA_VERSIONS : BEDROCK_VERSIONS;

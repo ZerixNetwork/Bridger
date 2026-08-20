@@ -8,5 +8,7 @@ test("reads source versions from Java and Bedrock metadata", () => {
 
 test("selects target metadata versions", () => {
     expect(targetVersion("java", "26.2").format).toEqual([88, 0]);
+    expect(targetVersion("java", "26.3").format).toEqual([97, 1]);
     expect(targetVersion("bedrock", "1.21.130").engine).toEqual([1, 21, 130]);
+    expect(targetVersion("bedrock", "1.26.50").engine).toEqual([1, 26, 50]);
 });
