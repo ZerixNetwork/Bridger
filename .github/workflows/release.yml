@@ -4,13 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (e.g. 1.0.0)'
+        description: 'Tag (e.g. v1.19.0-alpha.2)'
         required: true
-        type: string
+        type: choice
+        options:
+          - v1.19.0-alpha.2
       publish_maven:
         description: 'Publish to Maven (GitHub Packages)'
         required: false
-        default: true
+        default: false
         type: boolean
 
 permissions:
@@ -18,7 +20,16 @@ permissions:
   packages: write
 
 jobs:
+  validate_version:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.version }}
+    steps:
+      - name: Validate release tag
+        run: test "$RELEASE_TAG" = "v1.19.0-alpha.2"
+
   build_test_linux:
+    needs: validate_version
     strategy:
       matrix:
         include:
@@ -48,14 +59,6 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew ${{ matrix.gradle-args }}
 
-      - name: Publish to GitHub packages
-        if: matrix.os == 'ubuntu-latest' && github.event.inputs.publish_maven == 'true'
-        run: ./gradlew publish
-        env:
-          MAVEN_DEPLOY_URL: "https://maven.pkg.github.com/${{github.repository}}"
-          MAVEN_DEPLOY_USERNAME: ${{ github.actor }}
-          MAVEN_DEPLOY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload CLI Jar
         uses: actions/upload-artifact@v7
         if: matrix.os == 'ubuntu-latest'
@@ -70,6 +73,7 @@ jobs:
           path: build/libs/linux/
 
   build_windows:
+    needs: validate_version
     strategy:
       matrix:
         include:
@@ -137,6 +141,7 @@ jobs:
           path: build/libs/windows/
 
   build_mac:
+    needs: validate_version
     strategy:
       matrix:
         os: [macos-latest, macos-15-intel]
@@ -193,9 +198,12 @@ jobs:
           rm -rf "artifacts/chunker-cli"
 
       - name: Compress Linux Unpacked (amd64)
+        env:
+          RELEASE_TAG: ${{ inputs.version }}
         run: |
-          version="${{ github.event.inputs.version }}"
-          cd artifacts/linux-unpacked && zip -r "../Chunker-$version-amd64-linux.zip" . && cd ../..
+          version="$RELEASE_TAG"
+          version="${version#v}"
+          cd artifacts/linux-unpacked && zip -r "../Bridger-$version-amd64-linux.zip" . && cd ../..
           rm -rf "artifacts/linux-unpacked"
 
       - name: Rename AppImage files (amd64)
@@ -207,7 +215,7 @@ jobs:
       - name: Rename deb files (amd64)
         run: |
           for file in artifacts/chunker-electron_*.deb; do
-            new_file="${file//chunker-electron_/Chunker-}"
+            new_file="${file//chunker-electron_/Bridger-}"
             new_file="${new_file//_/-}"
             mv "$file" "${new_file%.deb}-linux.deb"
           done
@@ -226,9 +234,12 @@ jobs:
           rm -rf "artifacts/chunker-cli"
 
       - name: Compress Linux Unpacked (arm64)
+        env:
+          RELEASE_TAG: ${{ inputs.version }}
         run: |
-          version="${{ github.event.inputs.version }}"
-          cd artifacts/linux-arm64-unpacked && zip -r "../Chunker-$version-arm64-linux.zip" . && cd ../..
+          version="$RELEASE_TAG"
+          version="${version#v}"
+          cd artifacts/linux-arm64-unpacked && zip -r "../Bridger-$version-arm64-linux.zip" . && cd ../..
           rm -rf "artifacts/linux-arm64-unpacked"
 
       - name: Rename AppImage files (arm64)
@@ -243,7 +254,7 @@ jobs:
       - name: Rename deb files (arm64)
         run: |
           for file in artifacts/chunker-electron_*.deb; do
-            new_file="${file//chunker-electron_/Chunker-}"
+            new_file="${file//chunker-electron_/Bridger-}"
             new_file="${new_file//_/-}"
             mv "$file" "${new_file%.deb}-linux.deb"
           done
@@ -262,17 +273,20 @@ jobs:
           rm -rf "artifacts/chunker-cli"
 
       - name: Compress Windows Unpacked (x86)
+        env:
+          RELEASE_TAG: ${{ inputs.version }}
         run: |
-          version="${{ github.event.inputs.version }}"
-          cd artifacts/win-unpacked && zip -r "../Chunker-$version-windows-x86.zip" . && cd ../..
+          version="$RELEASE_TAG"
+          version="${version#v}"
+          cd artifacts/win-unpacked && zip -r "../Bridger-$version-windows-x86.zip" . && cd ../..
           rm -rf "artifacts/win-unpacked"
 
       - name: Rename exe files (x86)
         run: |
           for file in artifacts/*.exe; do
-            base_name="${file#artifacts/Chunker }"
+            base_name="${file#artifacts/Bridger }"
             base_name="${base_name%.exe}"
-            mv "$file" "artifacts/Chunker-${base_name}-windows-x86.exe"
+            mv "$file" "artifacts/Bridger-${base_name}-windows-x86.exe"
           done
 
       # === Windows arm64 ===
@@ -289,18 +303,21 @@ jobs:
           rm -rf "artifacts/chunker-cli"
 
       - name: Compress Windows Unpacked (arm64)
+        env:
+          RELEASE_TAG: ${{ inputs.version }}
         run: |
-          version="${{ github.event.inputs.version }}"
-          cd artifacts/win-arm64-unpacked && zip -r "../Chunker-$version-windows-arm64.zip" . && cd ../..
+          version="$RELEASE_TAG"
+          version="${version#v}"
+          cd artifacts/win-arm64-unpacked && zip -r "../Bridger-$version-windows-arm64.zip" . && cd ../..
           rm -rf "artifacts/win-arm64-unpacked"
 
       - name: Rename exe files (arm64)
         run: |
           for file in artifacts/*.exe; do
             [[ "$file" == *-windows-*.exe ]] && continue
-            base_name="${file#artifacts/Chunker }"
+            base_name="${file#artifacts/Bridger }"
             base_name="${base_name%.exe}"
-            mv "$file" "artifacts/Chunker-${base_name}-windows-arm64.exe"
+            mv "$file" "artifacts/Bridger-${base_name}-windows-arm64.exe"
           done
 
       # === Mac ===
@@ -329,9 +346,9 @@ jobs:
 
       - name: Rename Mac artifacts (legacy)
         run: |
-          find artifacts -type f -name "Chunker-*" ! -name "*-amd64*" ! -name "*arm64*" ! -name "*x86*" -exec bash -c '
+          find artifacts -type f -name "Bridger-*" ! -name "*-amd64*" ! -name "*arm64*" ! -name "*x86*" -exec bash -c '
             for file; do
-              new_name=$(echo "$file" | sed -E "s/(Chunker-[^-]+)(.*)(\.[a-zA-Z0-9]+)$/\1-amd64\2\3/");
+              new_name="${file%.*}-amd64.${file##*.}";
               mv "$file" "$new_name";
             done
           ' _ {} +
@@ -350,15 +367,72 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.version }}
         run: |
-          tag="${{ github.event.inputs.version }}"
-          gh release create --draft "$tag" --title "$tag" --notes "TODO"
+          gh release create --draft --prerelease "$RELEASE_TAG" --title "Bridger 1.19.0 — Alpha 2" --notes-file - <<'EOF'
+          # Bridger 1.19.0 — Alpha 2
+
+          > [!WARNING]
+          > This is an alpha release. Back up important worlds before converting them.
+
+          ## Highlights
+
+          - Added initial **Bedrock 1.26.40** and **Java 26.3** conversion support.
+          - Added configurable **Java memory allocation** in Bridger settings.
+          - Improved large schematic parsing and textured 3D preview stability.
+          - Added `.mctemplate`, TAR, GZIP TAR and Brotli TAR world imports.
+          - Added custom-dimension loading, editing and conversion improvements.
+          - Added brushable-block loot table conversion and newer entity, block, item and biome mappings.
+
+          ## Fixes and safety
+
+          - Fixed preview chunk indexing and large-world preview behavior.
+          - Fixed Nether identifiers and custom-dimension mappings.
+          - Hardened ZIP and TAR extraction against path traversal.
+          - Ensured development builds select the newest available CLI backend.
+
+          ## Downloads
+
+          Desktop and CLI builds are provided for Windows, macOS and Linux on x86-64 and ARM64 where supported. Choose the installer or portable archive matching your platform from the assets below.
+
+          ## Notes
+
+          Java 26.3 and Bedrock 1.26.40 support is experimental. Some newly introduced blocks or entities may still require follow-up fixes.
+
+          **Full changelog:** https://github.com/ZerixNetwork/Bridger/compare/v1.19.0-alpha.1...v1.19.0-alpha.2
+          EOF
 
       - name: Upload Artifacts
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.version }}
         run: |
           for file in artifacts/*; do
-            gh release upload ${{ github.event.inputs.version }} "$file"
+            gh release upload "$RELEASE_TAG" "$file"
           done
+
+      - uses: actions/checkout@v6
+        if: inputs.publish_maven
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Set up JDK 17
+        if: inputs.publish_maven
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        if: inputs.publish_maven
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v4
+
+      - name: Publish to GitHub Packages
+        if: inputs.publish_maven
+        run: ./gradlew publish
+        env:
+          MAVEN_DEPLOY_URL: "https://maven.pkg.github.com/${{ github.repository }}"
+          MAVEN_DEPLOY_USERNAME: ${{ github.actor }}
+          MAVEN_DEPLOY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

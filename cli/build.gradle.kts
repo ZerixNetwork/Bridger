@@ -36,7 +36,7 @@ dependencies {
 }
 
 group = "com.hivemc.chunker"
-version = "1.19.0-alpha.1"
+version = "1.19.0-alpha.2"
 description = "chunker"
 base.archivesName = "chunker-cli"
 

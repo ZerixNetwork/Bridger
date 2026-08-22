@@ -64,7 +64,7 @@ tasks.register<NpmTask>("build") {
         copy {
             from(layout.projectDirectory.dir("electron").dir("dist"))
             into(rootProject.projectDir.resolve("build").resolve("libs").resolve(buildType))
-            include("chunker*", "Chunker*", "*-unpacked/**")
+            include("chunker*", "Chunker*", "Bridger*", "*-unpacked/**")
         }
     }
 }
