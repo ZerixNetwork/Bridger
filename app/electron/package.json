@@ -12,7 +12,10 @@
     "test": "node --test"
   },
   "keywords": [],
-  "author": "Zerix Network",
+  "author": {
+    "name": "Zerix Network",
+    "email": "noreply@zerixnetwork.com"
+  },
   "homepage": "https://github.com/ZerixNetwork/Bridger",
   "license": "MIT",
   "devDependencies": {
