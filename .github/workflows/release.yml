@@ -348,7 +348,11 @@ jobs:
         run: |
           find artifacts -type f -name "Bridger-*" ! -name "*-amd64*" ! -name "*arm64*" ! -name "*x86*" -exec bash -c '
             for file; do
-              new_name="${file%.*}-amd64.${file##*.}";
+              if [[ "$file" == *-mac.* ]]; then
+                new_name="${file/-mac./-amd64-mac.}";
+              else
+                new_name="${file%.*}-amd64.${file##*.}";
+              fi
               mv "$file" "$new_name";
             done
           ' _ {} +
