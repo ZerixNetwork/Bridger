@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld("chunker", {
     version: versionInfo.version,
     gitVersion: versionInfo.git,
     platform: versionInfo.platform,
+    getMemorySettings: () => ipcRenderer.sendSync("memorySettings:get"),
+    setMemorySettings: (memoryMB) => ipcRenderer.sendSync("memorySettings:set", memoryMB),
     connect: (handlers) => {
         let sessionID = crypto.randomUUID();
 

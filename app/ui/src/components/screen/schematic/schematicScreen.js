@@ -66,15 +66,16 @@ export class SchematicScreen extends BaseScreen {
         canvas.width = schematic.width;
         canvas.height = schematic.length;
         const context = canvas.getContext("2d");
+        const colors = schematic.palette.map(blockColor);
         context.clearRect(0, 0, canvas.width, canvas.height);
         for (let z = 0; z < schematic.length; z++) for (let x = 0; x < schematic.width; x++) {
             if (layerMode) {
-                const color = blockColor(schematic.palette[schematic.blocks[schematic.index(x, layer, z)]]);
+                const color = colors[schematic.blockAt(schematic.index(x, layer, z))];
                 if (color) { context.fillStyle = color; context.fillRect(x, z, 1, 1); }
                 continue;
             }
             for (let y = schematic.height - 1; y >= 0; y--) {
-                const color = blockColor(schematic.palette[schematic.blocks[schematic.index(x, y, z)]]);
+                const color = colors[schematic.blockAt(schematic.index(x, y, z))];
                 if (color) {
                     context.fillStyle = color;
                     context.fillRect(x, z, 1, 1);

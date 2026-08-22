@@ -24,6 +24,7 @@
 /nbbuild/
 /dist/
 /nbdist/
+/zerixsubworkspace/
 /.nb-gradle/
 build/
 !**/src/main/**/build/

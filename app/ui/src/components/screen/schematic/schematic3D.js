@@ -4,8 +4,9 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls.js";
 import {blockColor, blockTint} from "./blockColor";
 import {blockTextures} from "./texturePack";
 
-const MAX_BLOCKS = 250000;
+const MAX_BLOCKS = 2000000;
 const MAX_VOLUME = 2000000;
+const BUILD_BATCH = 32768;
 
 export class Schematic3D extends Component {
     state = {warning: null, fullscreen: false, loading: true, progress: 0};
@@ -61,29 +62,40 @@ export class Schematic3D extends Component {
         light.position.set(1, 2, 1);
         scene.add(light);
 
-        this.earlyCleanup = () => {
+        let geometry = null;
+        const materials = [], loadedTextures = [];
+        const disposeScene = () => {
             this.viewer.current?.removeEventListener("keydown", this.keyDown);
             window.removeEventListener("keyup", this.keyUp);
             window.removeEventListener("blur", this.clearKeys);
             document.removeEventListener("fullscreenchange", this.fullscreenChange);
             controls.dispose();
+            geometry?.dispose();
+            materials.forEach(material => material.dispose());
+            loadedTextures.forEach(texture => texture.dispose());
             renderer.dispose();
             renderer.domElement.remove();
         };
+        this.earlyCleanup = disposeScene;
 
         const {blocks, truncated} = await this.visibleBlocks(schematic);
         if (this.destroyed) return;
         if (truncated) this.setState({warning: `Preview limited to ${MAX_BLOCKS.toLocaleString()} visible blocks.`});
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
         const groups = new Map();
-        blocks.forEach(block => {
+        for (let i = 0; i < blocks.length; i++) {
+            const block = blocks[i];
             const textures = blockTextures(this.props.textures, block.identifier);
             const key = textures ? `${textures.side}|${textures.top}|${textures.bottom}` : "fallback";
             if (!groups.has(key)) groups.set(key, {blocks: [], textures});
             groups.get(key).blocks.push(block);
-        });
+            if (i > 0 && i % BUILD_BATCH === 0) {
+                this.setState({progress: 70 + Math.round(i / blocks.length * 10)});
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                if (this.destroyed) return;
+            }
+        }
+        geometry = new THREE.BoxGeometry(1, 1, 1);
         const matrix = new THREE.Matrix4();
-        const materials = [], loadedTextures = [];
         const texturedMaterial = (textureUrl, block) => {
             const material = new THREE.MeshLambertMaterial({color: block.color, alphaTest: 0.1});
             const texture = new THREE.TextureLoader().load(textureUrl, () => {
@@ -98,7 +110,8 @@ export class Schematic3D extends Component {
             materials.push(material);
             return material;
         };
-        groups.forEach(groupData => {
+        let built = 0;
+        for (const groupData of groups.values()) {
             const group = groupData.blocks;
             let material;
             if (!groupData.textures) {
@@ -111,7 +124,8 @@ export class Schematic3D extends Component {
                 material = [side, side, top, bottom, side, side];
             }
             const mesh = new THREE.InstancedMesh(geometry, material, group.length);
-            group.forEach((block, i) => {
+            for (let i = 0; i < group.length; i++) {
+                const block = group[i];
                 matrix.makeTranslation(
                     block.x - schematic.width / 2,
                     block.y - schematic.height / 2,
@@ -119,11 +133,17 @@ export class Schematic3D extends Component {
                 );
                 mesh.setMatrixAt(i, matrix);
                 if (!groupData.textures) mesh.setColorAt(i, new THREE.Color(block.color));
-            });
+                built++;
+                if (built % BUILD_BATCH === 0) {
+                    this.setState({progress: 80 + Math.round(built / blocks.length * 20)});
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                    if (this.destroyed) return;
+                }
+            }
             mesh.instanceMatrix.needsUpdate = true;
             if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
             scene.add(mesh);
-        });
+        }
         this.setState({loading: false, progress: 100});
 
         this.resize = () => {
@@ -170,16 +190,7 @@ export class Schematic3D extends Component {
         this.cleanup = () => {
             cancelAnimationFrame(this.animation);
             window.removeEventListener("resize", this.resize);
-            this.viewer.current?.removeEventListener("keydown", this.keyDown);
-            window.removeEventListener("keyup", this.keyUp);
-            window.removeEventListener("blur", this.clearKeys);
-            document.removeEventListener("fullscreenchange", this.fullscreenChange);
-            controls.dispose();
-            geometry.dispose();
-            materials.forEach(material => material.dispose());
-            loadedTextures.forEach(texture => texture.dispose());
-            renderer.dispose();
-            renderer.domElement.remove();
+            disposeScene();
         };
     };
 
@@ -202,7 +213,7 @@ export class Schematic3D extends Component {
         let scanned = 0;
         const colorAt = (x, y, z) => {
             if (x < 0 || y < 0 || z < 0 || x >= schematic.width || y >= schematic.height || z >= schematic.length) return null;
-            return colors[schematic.blocks[schematic.index(x, y, z)]];
+            return colors[schematic.blockAt(schematic.index(x, y, z))];
         };
         for (let y = 0; y < schematic.height && blocks.length < MAX_BLOCKS; y++) {
             for (let z = 0; z < schematic.length && blocks.length < MAX_BLOCKS; z++) {
@@ -211,18 +222,18 @@ export class Schematic3D extends Component {
                     const color = colorAt(x, y, z);
                     if (color && (!colorAt(x - 1, y, z) || !colorAt(x + 1, y, z) || !colorAt(x, y - 1, z) ||
                         !colorAt(x, y + 1, z) || !colorAt(x, y, z - 1) || !colorAt(x, y, z + 1))) {
-                        const identifier = schematic.palette[schematic.blocks[schematic.index(x, y, z)]];
+                        const identifier = schematic.palette[schematic.blockAt(schematic.index(x, y, z))];
                         blocks.push({x, y, z, color, identifier});
                     }
-                    if ((scanned & 32767) === 0) {
+                    if ((scanned & 262143) === 0) {
                         if (this.destroyed) return {blocks, truncated: false};
-                        this.setState({progress: Math.round(scanned / total * 100)});
+                        this.setState({progress: Math.round(scanned / total * 70)});
                         await new Promise(resolve => requestAnimationFrame(resolve));
                     }
                 }
             }
         }
-        return {blocks, truncated: blocks.length === MAX_BLOCKS};
+        return {blocks, truncated: scanned < total};
     };
 
     render() { return <div className="schematic_3d" ref={this.viewer} tabIndex="0"

@@ -1,4 +1,6 @@
 const TYPES = {1: 1, 2: 2, 3: 4, 4: 8, 5: 4, 6: 8};
+const MAX_NBT_ARRAY_BYTES = 512 * 1024 * 1024;
+const MAX_SCHEMATIC_VOLUME = 100000000;
 
 export async function readNbt(file) {
     let bytes = new Uint8Array(await file.arrayBuffer());
@@ -24,7 +26,11 @@ export async function readNbt(file) {
 function parse(bytes, littleEndian) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     let offset = 0;
+    const requireBytes = (length) => {
+        if (length < 0 || offset + length > bytes.length) throw new Error("Unexpected end of NBT data");
+    };
     const number = (size, signed = true) => {
+        requireBytes(size);
         let value;
         if (size === 1) value = signed ? view.getInt8(offset) : view.getUint8(offset);
         else if (size === 2) value = signed ? view.getInt16(offset, littleEndian) : view.getUint16(offset, littleEndian);
@@ -35,6 +41,7 @@ function parse(bytes, littleEndian) {
     };
     const string = () => {
         const length = number(2, false);
+        requireBytes(length);
         const value = new TextDecoder().decode(bytes.subarray(offset, offset + length));
         offset += length;
         return value;
@@ -47,9 +54,20 @@ function parse(bytes, littleEndian) {
         }
         if (type === 7 || type === 11 || type === 12) {
             const length = number(4);
-            if (length < 0 || length > 50000000) throw new Error("Invalid NBT array length");
             const size = type === 7 ? 1 : type === 11 ? 4 : 8;
-            return Array.from({length}, () => number(size));
+            const byteLength = length * size;
+            if (!Number.isSafeInteger(byteLength) || byteLength < 0 || byteLength > MAX_NBT_ARRAY_BYTES) {
+                throw new Error("Invalid or excessively large NBT array");
+            }
+            requireBytes(byteLength);
+            if (type === 7) {
+                const value = bytes.subarray(offset, offset + length);
+                offset += length;
+                return value;
+            }
+            const value = type === 11 ? new Int32Array(length) : new Float64Array(length);
+            for (let i = 0; i < length; i++) value[i] = number(size);
+            return value;
         }
         if (type === 8) return string();
         if (type === 9) {
@@ -71,7 +89,11 @@ function parse(bytes, littleEndian) {
     const rootType = number(1);
     if (rootType !== 10) throw new Error("NBT root is not a compound");
     string();
-    return payload(rootType);
+    const root = payload(rootType);
+    for (; offset < bytes.length; offset++) {
+        if (bytes[offset] !== 0) throw new Error("Unexpected data after NBT root");
+    }
+    return root;
 }
 
 export function toSchematic(root, legacyBlocks = {}) {
@@ -84,18 +106,29 @@ export function toSchematic(root, legacyBlocks = {}) {
 }
 
 function legacy(root, legacyBlocks) {
-    const ids = root.Blocks.map(id => id & 255);
-    const data = root.Data?.map(value => value & 15) || Array(ids.length).fill(0);
+    const ids = root.Blocks;
+    const data = root.Data;
+    const addBlocks = root.AddBlocks;
+    const volume = root.Width * root.Height * root.Length;
+    validateDimensions(root.Width, root.Height, root.Length);
+    if (ids.length < volume) throw new Error("Schematic block data is incomplete");
+    if (data && data.length < volume) throw new Error("Schematic metadata is incomplete");
+    if (addBlocks && addBlocks.length < Math.ceil(volume / 2)) throw new Error("Schematic extended block data is incomplete");
     const embedded = root.SchematicaMapping || root.BlockIDs || {};
     const names = new Map(Object.entries(embedded).map(([name, id]) => [id, name.includes(":") ? name : "minecraft:" + name]));
-    const states = ids.map((id, index) => `${id}:${data[index]}`);
-    const unique = Array.from(new Set(states));
-    const palette = unique.map(state => {
-        const id = Number(state.split(":")[0]);
-        return legacyBlocks[state] || names.get(id) || LEGACY_BLOCKS[id] || "Block " + state;
-    });
-    const lookup = new Map(unique.map((state, i) => [state, i]));
-    return result(root.Width, root.Height, root.Length, states.map(state => lookup.get(state)), palette);
+    const palette = [], lookup = new Map();
+    const stateAt = index => {
+        const high = addBlocks ? (addBlocks[index >> 1] >> ((index & 1) * 4)) & 15 : 0;
+        return (((ids[index] & 255) | (high << 8)) << 4) | (data ? data[index] & 15 : 0);
+    };
+    for (let i = 0; i < volume; i++) {
+        const state = stateAt(i);
+        if (lookup.has(state)) continue;
+        const id = state >> 4, metadata = state & 15, key = `${id}:${metadata}`;
+        lookup.set(state, palette.length);
+        palette.push(legacyBlocks[key] || names.get(id) || LEGACY_BLOCKS[id] || "Block " + key);
+    }
+    return result(root.Width, root.Height, root.Length, null, palette, index => lookup.get(stateAt(index)));
 }
 
 const LEGACY_BLOCKS = {
@@ -162,13 +195,13 @@ function bedrockStructure(root) {
 function index(x, y, z, width, length) { return x + z * width + y * width * length; }
 function validateDimensions(width, height, length) {
     const volume = width * height * length;
-    if (!Number.isSafeInteger(volume) || width < 1 || height < 1 || length < 1 || volume > 50000000) {
+    if (!Number.isSafeInteger(volume) || width < 1 || height < 1 || length < 1 || volume > MAX_SCHEMATIC_VOLUME) {
         throw new Error("Invalid or excessively large schematic dimensions");
     }
 }
-function result(width, height, length, blocks, palette) {
+function result(width, height, length, blocks, palette, blockAt = index => blocks[index]) {
     validateDimensions(width, height, length);
     const volume = width * height * length;
-    if (blocks.length < volume) throw new Error("Schematic block data is incomplete");
-    return {width, height, length, blocks, palette, index: (x, y, z) => index(x, y, z, width, length)};
+    if (blocks && blocks.length < volume) throw new Error("Schematic block data is incomplete");
+    return {width, height, length, blocks, palette, blockAt, index: (x, y, z) => index(x, y, z, width, length)};
 }

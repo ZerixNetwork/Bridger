@@ -18,6 +18,7 @@ const JVM_ARGUMENTS = [
 
 // This flag indicates arguments should be forwarded to the JVM
 const ADDITIONAL_JAVA_OPTIONS = "--java-options";
+const SETTINGS_FILE = "settings.json";
 
 // Start logging
 log.transports.file.level = "info";
@@ -70,10 +71,48 @@ const getJavaOptions = () => {
     return jvmArgs.join(' ');
 }
 
-const createWindow = () => {
-    // Get launch parameters (these are forwarded to the backend process)
-    const javaOptions = getJavaOptions();
+const readSettings = () => {
+    try {
+        return JSON.parse(fs.readFileSync(path.join(app.getPath("userData"), SETTINGS_FILE), "utf8"));
+    } catch (error) {
+        if (error.code !== "ENOENT") log.warn("Failed to read app settings", error);
+        return {};
+    }
+};
 
+const getMemorySettings = () => {
+    const totalMemoryMB = Math.floor(os.totalmem() / (1024 * 1024));
+    const maxMemoryMB = Math.max(512, totalMemoryMB - 1024);
+    const configured = readSettings().memoryMB;
+    const memoryMB = Number.isInteger(configured) && configured >= 512 ? Math.min(configured, maxMemoryMB) : null;
+    const freeMemoryMB = os.freemem() / (1024 * 1024);
+    const recommendedMemoryMB = Math.floor(Math.max(Math.min(freeMemoryMB - 1024, freeMemoryMB * 0.75), 512));
+    return {memoryMB, totalMemoryMB, maxMemoryMB, recommendedMemoryMB};
+};
+
+const saveMemorySettings = (memoryMB) => {
+    const {maxMemoryMB} = getMemorySettings();
+    if (memoryMB !== null && (!Number.isInteger(memoryMB) || memoryMB < 512 || memoryMB > maxMemoryMB)) {
+        throw new Error(`Memory must be automatic or between 512 and ${maxMemoryMB} MB`);
+    }
+    const settings = readSettings();
+    settings.memoryMB = memoryMB;
+    const settingsPath = path.join(app.getPath("userData"), SETTINGS_FILE);
+    fs.mkdirSync(path.dirname(settingsPath), {recursive: true});
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    return getMemorySettings();
+};
+
+const getSessionJavaOptions = () => {
+    let javaOptions = getJavaOptions();
+    const {memoryMB} = getMemorySettings();
+    if (!/(^|\s)-Xmx\S*/.test(javaOptions) && memoryMB !== null) {
+        javaOptions += `${javaOptions ? " " : ""}-Xmx${memoryMB}M`;
+    }
+    return javaOptions;
+};
+
+const createWindow = () => {
     // Start the window
     const window = new BrowserWindow({
         title: "Bridger",
@@ -95,7 +134,7 @@ const createWindow = () => {
         let session;
         try {
             // Create a session
-            session = new Session(sessions, sessionID, window, _event.sender, javaOptions);
+            session = new Session(sessions, sessionID, window, _event.sender, getSessionJavaOptions());
         } catch (e) {
             log.warn("Session failed to be made ", e);
 
@@ -304,3 +343,13 @@ versionInfo.platform = os.platform() + "-" + os.arch() + "-" + os.release();
 ipcMain.on("versionInfo", (e) => {
     e.returnValue = versionInfo;
 })
+ipcMain.on("memorySettings:get", (e) => {
+    e.returnValue = getMemorySettings();
+});
+ipcMain.on("memorySettings:set", (e, memoryMB) => {
+    try {
+        e.returnValue = {settings: saveMemorySettings(memoryMB)};
+    } catch (error) {
+        e.returnValue = {error: error.message};
+    }
+});

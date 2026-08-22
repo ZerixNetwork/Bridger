@@ -63,7 +63,7 @@ The project was started by **SuperDoduos** for Zerix Network after needing a qui
 - 1.19.0–1.19.80
 - 1.20.0–1.20.80
 - 1.21.0–1.21.130
-- 1.26.0–1.26.30
+- 1.26.0–1.26.40
 
 </details>
 
@@ -84,7 +84,7 @@ The project was started by **SuperDoduos** for Zerix Network after needing a qui
 - 1.19.0–1.19.4
 - 1.20.0–1.20.6
 - 1.21.0–1.21.11
-- 26.1–26.2
+- 26.1–26.3
 
 </details>
 
