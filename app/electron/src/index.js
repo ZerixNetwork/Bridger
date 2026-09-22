@@ -22,6 +22,7 @@ const SETTINGS_FILE = "settings.json";
 
 // Start logging
 log.transports.file.level = "info";
+if (app.isPackaged) log.transports.console.level = false;
 log.transports.file.writeOptions
 log.eventLogger.startLogging();
 

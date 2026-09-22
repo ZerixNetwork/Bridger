@@ -1019,6 +1019,28 @@ input:checked + .switch:before {
     font-weight: bold;
 }
 
+#content .main_content.dimension_selection {
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 18px 50px;
+}
+
+.dimension_selection label {
+    display: flex;
+    flex-direction: column;
+}
+
+.dimension_selection label span {
+    color: #777777;
+}
+
+.dimension_selection select {
+    min-width: 280px;
+    padding: 10px;
+}
+
 #content .main_content.conversion_editions {
     justify-content: center;
     gap: 30px;

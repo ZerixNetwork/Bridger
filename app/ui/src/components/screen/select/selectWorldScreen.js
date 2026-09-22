@@ -5,6 +5,7 @@ import api from "../../../api";
 import {Round2DP} from "../../progress";
 import {SchematicScreen} from "../schematic/schematicScreen";
 import {ResourcePackScreen} from "../resourcePack/resourcePackScreen";
+import {dimensionFolderSelection, isDirectorySelection, selectedDirectoryFromFile} from "./dimensionFolder";
 
 let jokes = [
     "How does Steve stay in shape? He runs around the block.",
@@ -82,7 +83,7 @@ export class SelectWorldScreen extends BaseScreen {
             return;
         }
 
-        if (files.length > 1) {
+        if (isDirectorySelection(files)) {
             this.setState({
                 selected: files[0].path.split('/')[1],
                 processing: true,
@@ -98,13 +99,23 @@ export class SelectWorldScreen extends BaseScreen {
                 }
             }
             if (level) {
+                this.app.setState({requestedDimension: undefined});
                 self.setState({filePath: level, filePathDirectory: true, processing: false});
             } else {
-                this.app.showError("Invalid World", "The folder you selected did not contain a level.dat, please ensure you're using a Minecraft world folder.", null, undefined, true);
-                this.setState({selected: false, detecting: false, processing: false});
+                const firstPath = window.chunker.getPathForFile(files[0].file);
+                const selectedDirectory = selectedDirectoryFromFile(firstPath, files[0].path);
+                const dimension = dimensionFolderSelection(selectedDirectory);
+                if (dimension) {
+                    this.app.setState({requestedDimension: dimension.identifier});
+                    self.setState({filePath: dimension.worldPath, filePathDirectory: true, processing: false});
+                } else {
+                    this.app.showError("Invalid World", "The folder you selected did not contain a level.dat or a Java dimension, please select a Minecraft world or dimensions/<namespace>/<dimension> folder.", null, undefined, true);
+                    this.setState({selected: false, detecting: false, processing: false});
+                }
             }
         } else {
             let fullPath = window.chunker.getPathForFile(files[0].file);
+            this.app.setState({requestedDimension: undefined});
             this.setState({selected: files[0].path.split('/')[1], filePath: fullPath, filePathDirectory: false});
         }
     };

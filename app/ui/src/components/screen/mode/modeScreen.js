@@ -4,6 +4,8 @@ import {SettingsScreen} from "../settings/settingsScreen";
 import {getFormatName, getVersionName, ModeOption} from "./modeOption";
 import {ProcessingScreen} from "../processing/processingScreen";
 import api from "../../../api";
+import {getDimensionDisplayName} from "../settings/tab/dimensionPruningTab";
+import {dimensionMappingForSelection, selectionForDimensionMapping} from "./dimensionSelection";
 
 export class ModeScreen extends BaseScreen {
     state = {
@@ -67,11 +69,20 @@ export class ModeScreen extends BaseScreen {
         this.setState({selected: newSelection});
     };
 
+    updateDimension = (dimension) => {
+        const dimensions = this.app.state.settings?.dimensions ?? [];
+        this.app.setState({dimensionMapping: dimensionMappingForSelection(dimensions, dimension)});
+    };
+
     render() {
         const input = this.app.state.inputType;
         const inputFormat = getFormatName(input.id);
         const inputVersion = input.version || getVersionName(input.id);
         const inputEdition = input.id.startsWith("BEDROCK_") ? "bedrock" : "java";
+        const dimensions = this.app.state.settings?.dimensions ?? [];
+        const settingsReady = this.app.settingsProgress.isComplete() && this.app.state.settings !== undefined;
+        const canExtractDimension = dimensions.some(identifier => identifier !== "minecraft:overworld");
+        const dimension = selectionForDimensionMapping(dimensions, this.app.state.dimensionMapping);
         let writers = this.app.state.sessionData.version.writers.slice(0).reverse()
             .filter(writer => !this.state.edition || writer.id.startsWith(this.state.edition + "_"));
         return (
@@ -90,6 +101,20 @@ export class ModeScreen extends BaseScreen {
                         </div>
                     </div>
                 </div>
+                {canExtractDimension && <div className="main_content dimension_selection">
+                    <label htmlFor="dimension-selection">
+                        <strong>World content</strong>
+                        <span>Convert the complete world, or turn one dimension into a normal Overworld.</span>
+                    </label>
+                    <select id="dimension-selection" value={dimension}
+                            onChange={event => this.updateDimension(event.target.value)}>
+                        {dimension === "CUSTOM" && <option value="CUSTOM" disabled>Custom mapping (Advanced Mode)</option>}
+                        <option value="ALL">Complete world (all dimensions)</option>
+                        {dimensions.map(identifier => <option key={identifier} value={identifier}>
+                            {getDimensionDisplayName(identifier)} only (as Overworld)
+                        </option>)}
+                    </select>
+                </div>}
                 {this.app.state.sessionData.version.warnings &&
                     <div className="main_content warning">
                         <span>Warning: {this.app.state.sessionData.version.warnings}</span>
@@ -115,10 +140,10 @@ export class ModeScreen extends BaseScreen {
                     <button onClick={() => this.state.edition ? this.setState({edition: undefined, selected: undefined}) : window.location.reload()}
                             type="submit" className="button red">{this.state.edition ? "Back" : "Restart"}</button>
                     {this.state.edition && <button
-                        type="submit" className="button magenta" disabled={this.state.selected === undefined}
+                        type="submit" className="button magenta" disabled={this.state.selected === undefined || !settingsReady}
                         onClick={() => this.convertWorld(true)}>Advanced Mode</button>}
                     {this.state.edition && <button
-                        type="submit" className="button green" disabled={this.state.selected === undefined}
+                        type="submit" className="button green" disabled={this.state.selected === undefined || !settingsReady}
                         onClick={() => this.convertWorld(false)}>Convert</button>}
                 </div>
             </div>

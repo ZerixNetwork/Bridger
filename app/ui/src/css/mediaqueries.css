@@ -219,6 +219,16 @@ img {
         box-sizing: border-box;
     }
 
+    #content .main_content.dimension_selection {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 18px 20px;
+    }
+
+    .dimension_selection select {
+        min-width: 0;
+    }
+
     .conversion_editions .gray_box {
         width: 100%;
         box-sizing: border-box;

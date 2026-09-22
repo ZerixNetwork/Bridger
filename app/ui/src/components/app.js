@@ -54,6 +54,7 @@ export class App extends Component {
         dimensionMapping: {},
         biomeMapping: {},
         customDimensions: {},
+        requestedDimension: undefined,
         converterSettings: {}
     };
 
@@ -193,8 +194,10 @@ export class App extends Component {
                     settings: message.output,
 
                     // Update the dimension mappings with the discovered dimensions
-                    dimensionMapping: Object.keys(prevState.dimensionMapping).length > 0 ? prevState.dimensionMapping
-                        : Object.fromEntries(message.output.dimensions.map(identifier => [identifier, identifier]))
+                    dimensionMapping: prevState.requestedDimension && message.output.dimensions.includes(prevState.requestedDimension)
+                        ? {[prevState.requestedDimension]: "minecraft:overworld"}
+                        : Object.keys(prevState.dimensionMapping).length > 0 ? prevState.dimensionMapping
+                            : Object.fromEntries(message.output.dimensions.map(identifier => [identifier, identifier]))
                 }));
 
                 if (self.state.requestPreview) {
