@@ -5,6 +5,7 @@ import api from "../../../api";
 import {Round2DP} from "../../progress";
 import {SchematicScreen} from "../schematic/schematicScreen";
 import {ResourcePackScreen} from "../resourcePack/resourcePackScreen";
+import {WorldRenderScreen} from "../render/worldRenderScreen";
 import {dimensionFolderSelection, isDirectorySelection, selectedDirectoryFromFile} from "./dimensionFolder";
 
 let jokes = [
@@ -365,6 +366,11 @@ export class SelectWorldScreen extends BaseScreen {
                             <img src="images/dropper.png" alt=""/>
                             Preview Schematics
                             <span>Java and Bedrock structures</span>
+                        </button>
+                        <button onClick={() => this.app.setScreen(WorldRenderScreen)} className="gray_box">
+                            <img src="images/grass.png" alt=""/>
+                            Rendering 3D
+                            <span>Open multiple worlds in tabs</span>
                         </button>
                     </div>
                 }

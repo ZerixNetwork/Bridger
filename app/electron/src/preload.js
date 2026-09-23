@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld("chunker", {
     platform: versionInfo.platform,
     getMemorySettings: () => ipcRenderer.sendSync("memorySettings:get"),
     setMemorySettings: (memoryMB) => ipcRenderer.sendSync("memorySettings:set", memoryMB),
+    chooseWorldFolders: () => ipcRenderer.invoke("worldFolders:choose"),
+    discoverWorldFolders: (paths) => ipcRenderer.invoke("worldFolders:discover", paths),
     connect: (handlers) => {
         let sessionID = crypto.randomUUID();
 

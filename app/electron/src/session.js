@@ -275,7 +275,7 @@ export class Session {
                 await this.generateSettings(data.requestId);
                 break;
             case "generate_preview":
-                await this.generatePreview(data.requestId);
+                await this.generatePreview(data.requestId, data.previewId);
                 break;
             case "convert":
                 await this.convertWorld(data.outputType, data.requestId, data);
@@ -411,6 +411,7 @@ export class Session {
     async selectWorld(inputPath, requestId) {
         // Create the input directory
         let worldInputPath = path.join(this._sessionPath, "input");
+        await fs.rm(worldInputPath, {recursive: true, force: true});
         await fs.mkdir(worldInputPath);
 
         // Copy / Extract the world (if it's an archive)
@@ -669,15 +670,16 @@ export class Session {
         });
     }
 
-    async generatePreview(requestId) {
+    async generatePreview(requestId, previewId = undefined) {
         let worldInputPath = path.join(this._sessionPath, "input");
-        let previewOutputPath = path.join(this._sessionPath, "preview");
+        let safePreviewId = previewId?.replace(/[^a-zA-Z0-9_-]/g, "");
+        let previewOutputPath = path.join(this._sessionPath, "preview", safePreviewId || "current");
 
         // Ensure the preview directory doesn't exist
         await fs.rm(previewOutputPath, {recursive: true, force: true});
 
         // Make the directory for output
-        await fs.mkdir(previewOutputPath);
+        await fs.mkdir(previewOutputPath, {recursive: true});
 
         // Process request
         let request = {

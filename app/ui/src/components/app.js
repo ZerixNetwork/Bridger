@@ -212,7 +212,7 @@ export class App extends Component {
 
     generatePreview = () => {
         let self = this;
-        api.send({type: "flow", method: "generate_preview"}, this.previewProgress.pipe(function (message) {
+        api.send({type: "flow", method: "generate_preview", previewId: "current"}, this.previewProgress.pipe(function (message) {
             if (message.type === "error") {
                 if (!message.cancelled) {
                     console.info("Failed to preview: " + message.error);
@@ -249,7 +249,14 @@ export class App extends Component {
                         bufferIndex += 4;
                         let regionCount = dataView.getInt32(bufferIndex, true);
                         bufferIndex += 4;
-                        bufferIndex += regionCount * (8 + 128); // Skip region bytes
+                        worlds[worldIndex].regions = [];
+                        for (let region = 0; region < regionCount; region++) {
+                            worlds[worldIndex].regions.push({
+                                x: dataView.getInt32(bufferIndex, true),
+                                z: dataView.getInt32(bufferIndex + 4, true)
+                            });
+                            bufferIndex += 8 + 128; // Position + present-chunk bitset
+                        }
                     }
 
                     self.setState({previewData: worlds});

@@ -251,8 +251,12 @@ const createWindow = () => {
             })
         }
 
-        // Fetch the file
-        return net.fetch(url.pathToFileURL(inputPath).toString());
+        // Fetch the file and allow the development UI origin to inspect image pixels.
+        return net.fetch(url.pathToFileURL(inputPath).toString()).then(response => new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: {...Object.fromEntries(response.headers), "access-control-allow-origin": "*"}
+        }));
     });
 
     // Setup before quit behaviour to ensure sessions are cleaned up
@@ -353,4 +357,29 @@ ipcMain.on("memorySettings:set", (e, memoryMB) => {
     } catch (error) {
         e.returnValue = {error: error.message};
     }
+});
+ipcMain.handle("worldFolders:choose", async () => {
+    const result = await dialog.showOpenDialog({properties: ["openDirectory", "multiSelections"]});
+    return result.canceled ? [] : result.filePaths;
+});
+ipcMain.handle("worldFolders:discover", async (_event, roots) => {
+    const worlds = [];
+    const queue = [...new Set(roots.map(root => path.resolve(root)))];
+    while (queue.length && worlds.length < 200) {
+        const current = queue.shift();
+        let entries;
+        try {
+            entries = await fs.promises.readdir(current, {withFileTypes: true});
+        } catch (_) {
+            continue;
+        }
+        if (entries.some(entry => entry.isFile() && entry.name.toLowerCase() === "level.dat")) {
+            worlds.push(current);
+            continue;
+        }
+        for (const entry of entries) {
+            if (entry.isDirectory() && !entry.name.startsWith(".")) queue.push(path.join(current, entry.name));
+        }
+    }
+    return worlds.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
 });

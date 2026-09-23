@@ -7,6 +7,7 @@ import {ProgressComponent} from "../../../../progress";
 import "leaflet-mouse-position/src/L.Control.MousePosition.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import {getDimensionDisplayName, isVanillaDimension} from "../dimensionPruningTab";
+import {World3D} from "./world3D";
 
 require("leaflet-mouse-position/src/L.Control.MousePosition"); // As it adds new controls, need to be required
 require("leaflet-fullscreen/dist/Leaflet.fullscreen"); // As it adds new controls, need to be required
@@ -22,6 +23,7 @@ L.Icon.Default.mergeOptions({
 
 export class PreviewComponent extends Component {
     app = this.props.app;
+    state = {view: "2d", dimension: undefined};
 
     render() {
         return (
@@ -32,9 +34,28 @@ export class PreviewComponent extends Component {
                     </div>
                 }
                 {this.app.previewProgress.isComplete() && this.app.state.previewData !== undefined &&
-                    <Map
-                        session={this.props.session} data={this.app.state.previewData} app={this.app}
-                        pruningSettings={this.app.state.pruningSettings}/>
+                    <div className="world_preview">
+                        <div className="world_preview_toolbar">
+                            <button className={this.state.view === "2d" ? "active" : ""}
+                                    onClick={() => this.setState({view: "2d"})}>2D</button>
+                            <button className={this.state.view === "3d" ? "active" : ""}
+                                    onClick={() => this.setState({view: "3d"})}>3D</button>
+                            {this.state.view === "3d" && <select value={this.state.dimension ?? this.app.state.settings.dimensions[0]}
+                                    onChange={event => this.setState({dimension: event.target.value})}>
+                                {this.app.state.settings.dimensions.map(dimension =>
+                                    <option key={dimension} value={dimension}>{getDimensionDisplayName(dimension)}</option>)}
+                            </select>}
+                        </div>
+                        {this.state.view === "2d" ? <Map
+                            session={this.props.session} previewPath="preview/current" data={this.app.state.previewData} app={this.app}
+                            pruningSettings={this.app.state.pruningSettings}/> : <World3D
+                            key={this.state.dimension ?? this.app.state.settings.dimensions[0]}
+                            session={this.props.session}
+                            previewPath="preview/current"
+                            dimension={this.state.dimension ?? this.app.state.settings.dimensions[0]}
+                            data={this.app.state.previewData[this.state.dimension ?? this.app.state.settings.dimensions[0]]}
+                        />}
+                    </div>
                 }
             </React.Fragment>
         );
@@ -56,7 +77,7 @@ export class Map extends Component {
         });
 
         let worlds = this.app.state.settings.dimensions.map((a, k) => {
-            return L.tileLayer("session://{session}/preview/{world}.{x}.{y}.png", {
+            return L.tileLayer("session://{session}/{previewPath}/{world}.{x}.{y}.png", {
                 maxNativeZoom: 0,
                 minNativeZoom: 0,
                 minZoom: -5,
@@ -64,6 +85,7 @@ export class Map extends Component {
                 world: a.replace(":", "_"),
                 id: "blocks",
                 session: self.props.session,
+                previewPath: self.props.previewPath ?? "preview/current",
                 tileSize: 512,
                 noWrap: true,
                 identifier: a,
@@ -148,6 +170,8 @@ export class Map extends Component {
                 layer: currentLayer
             });
         }
+        this.mymap.remove();
+        this.mymap = undefined;
     }
 
     moveRegion = (world, regionIndex, minX, minZ, maxX, maxZ) => {

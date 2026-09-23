@@ -1,0 +1,10 @@
+.world_render_screen { min-height: 0; }
+.world_render_tabs { display: flex; gap: 4px; padding: 8px 16px 0; overflow-x: auto; }
+.world_render_tabs button { padding: 9px 12px; background: #d8d9d9; color: #535353; white-space: nowrap; }
+.world_render_tabs button.active { background: #36b14a; color: white; }
+.world_render_tabs button.add { margin-left: auto; background: #9c3382; color: white; }
+.world_render_tabs span { margin-left: 10px; font-size: 18px; }
+.world_render_content { flex-direction: column; gap: 10px; min-height: 0; }
+.world_render_content > select { align-self: flex-end; padding: 8px 12px; font-weight: bold; }
+.world_render_content > .gray_box { width: min(520px, 80%); text-align: center; align-self: center; }
+.world_render_status { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 360px; }

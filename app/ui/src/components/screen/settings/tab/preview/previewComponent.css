@@ -10,6 +10,18 @@
     width: 100%;
 }
 
+.world_preview { width: 100%; }
+.world_preview_toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.world_preview_toolbar button, .world_preview_toolbar select { padding: 8px 14px; font-weight: bold; }
+.world_preview_toolbar button.active { background: #36b14a; color: white; }
+.world_preview_toolbar select { margin-left: auto; }
+.world_3d { position: relative; width: 100%; height: 60vh; min-height: 360px; overflow: hidden; background: #242424; }
+.world_3d canvas { display: block; }
+.world_3d_message, .world_3d_notice { position: absolute; z-index: 2; left: 50%; transform: translateX(-50%); padding: 9px 13px; color: white; background: rgba(0, 0, 0, .72); }
+.world_3d_message { top: 50%; transform: translate(-50%, -50%); }
+.world_3d_message.error { background: #bd2535; }
+.world_3d_notice { top: 12px; }
+
 /* Leaflet crispness override (https://github.com/Leaflet/Leaflet/issues/5883) */
 .leaflet-container .leaflet-overlay-pane svg,
 .leaflet-container .leaflet-marker-pane img,
