@@ -44,6 +44,10 @@ import java.util.function.Consumer;
  * A converter which allows a session to be created with settings and taking a reader and writer to use for conversion.
  */
 public class WorldConverter implements Converter {
+    @Override
+    public boolean isPreview() {
+        return writer != null && writer.getEncodingType() == com.hivemc.chunker.conversion.encoding.EncodingType.PREVIEW;
+    }
     /**
      * Signal used to indicate compaction has started, this is used to indicate the progress bar should change.
      */

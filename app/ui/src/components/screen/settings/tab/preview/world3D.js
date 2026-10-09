@@ -4,6 +4,8 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls.js";
 import {loadVanillaTextures} from "../../../schematic/vanillaTextures";
 import {blockTextures, disposeTexturePack} from "../../../schematic/texturePack";
 import {blockTint} from "../../../schematic/blockColor";
+import {buildWorldMeshes} from "./worldMesh";
+import {createBlockModels} from "./blockModels";
 
 const MAX_REGIONS = 9;
 
@@ -15,7 +17,7 @@ const loadBlocks = async url => {
 
 export class World3D extends Component {
     container = React.createRef();
-    state = {loading: true, error: null, limited: false};
+    state = {loading: true, error: null, limited: false, missing: []};
 
     componentDidMount() { this.start(); }
 
@@ -53,16 +55,19 @@ export class World3D extends Component {
         container.addEventListener("keydown", this.keyDown);
         window.addEventListener("keyup", this.keyUp);
         scene.add(new THREE.HemisphereLight(0xffffff, 0x333333, 1.7));
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const geometries = [];
         const materials = [], loadedTextures = [];
-        let texturePack = null;
+        let texturePack = null, modelLibrary = null;
+        const instancedMeshes = [];
+        const missing = new Set();
         this.cleanup = () => {
             if (this.animation) cancelAnimationFrame(this.animation);
             if (this.resize) window.removeEventListener("resize", this.resize);
             controls.dispose();
             container.removeEventListener("keydown", this.keyDown);
             window.removeEventListener("keyup", this.keyUp);
-            geometry.dispose();
+            geometries.forEach(geometry => geometry.dispose());
+            instancedMeshes.forEach(mesh => mesh.dispose());
             materials.forEach(material => material.dispose());
             loadedTextures.forEach(texture => texture.dispose());
             disposeTexturePack(texturePack);
@@ -74,18 +79,38 @@ export class World3D extends Component {
         const originZ = regions.reduce((sum, region) => sum + region.z * 512, 0) / regions.length;
 
         try {
-            try { texturePack = (await loadVanillaTextures()).textures; } catch (_) { /* colors remain available */ }
+            try {
+                const vanilla = await loadVanillaTextures();
+                texturePack = vanilla.textures;
+                if (vanilla.models) modelLibrary = createBlockModels(vanilla.models);
+            } catch (_) { /* colors remain available */ }
+            if (this.destroyed) {
+                disposeTexturePack(texturePack);
+                return;
+            }
             const materialCache = new Map();
-            const makeTextureMaterial = (url, identifier) => {
-                const material = new THREE.MeshLambertMaterial({color: 0xffffff, alphaTest: 0.1});
+            const makeTextureMaterial = (url, identifier, descriptor) => {
+                const material = new THREE.MeshLambertMaterial({color: 0xffffff,
+                    alphaTest: descriptor?.translucent ? 0.01 : 0.1,
+                    transparent: !!descriptor?.translucent, depthWrite: !descriptor?.translucent,
+                    side: descriptor ? THREE.DoubleSide : THREE.FrontSide,
+                    polygonOffset: !!descriptor?.tinted, polygonOffsetFactor: -1, polygonOffsetUnits: -1});
                 const texture = new THREE.TextureLoader().load(url, () => {
-                    material.color.set(blockTint(identifier));
+                    material.color.set(descriptor?.water ? 0x3f76e4 : !descriptor || descriptor.tinted ? blockTint(identifier) : 0xffffff);
+                    if (texture.image.height > texture.image.width) {
+                        const frame = document.createElement("canvas");
+                        frame.width = frame.height = texture.image.width;
+                        frame.getContext("2d").drawImage(texture.image, 0, 0, frame.width, frame.height, 0, 0, frame.width, frame.height);
+                        texture.image = frame;
+                        texture.needsUpdate = true;
+                    }
                     material.map = texture;
                     material.needsUpdate = true;
                 });
                 texture.colorSpace = THREE.SRGBColorSpace;
                 texture.magFilter = THREE.NearestFilter;
                 texture.minFilter = THREE.NearestFilter;
+                texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
                 loadedTextures.push(texture);
                 materials.push(material);
                 return material;
@@ -106,52 +131,74 @@ export class World3D extends Component {
                 materialCache.set(identifier, material);
                 return material;
             };
+            const nativeMaterialCache = new Map();
+            const getNativeMaterials = (model, identifier, rgb) => model.materials.map(descriptor => {
+                const name = descriptor.texture?.replace(/^minecraft:/, "").replace(/^block\//, "");
+                const url = name && texturePack?.get(name);
+                const tint = descriptor.water ? 0x3f76e4 : descriptor.tinted ? blockTint(identifier) : 0xffffff;
+                const key = JSON.stringify([url, tint, descriptor.translucent, descriptor.color, url ? null : rgb]);
+                if (nativeMaterialCache.has(key)) return nativeMaterialCache.get(key);
+                if (!url) missing.add(identifier.split("[")[0]);
+                const material = url ? makeTextureMaterial(url, identifier, descriptor) : new THREE.MeshLambertMaterial({
+                    color: descriptor.color ?? (model.missing ? 0xff00ff : rgb), transparent:descriptor.translucent,
+                    opacity:descriptor.translucent ? 0.4 : 1, depthWrite:!descriptor.translucent, side:THREE.DoubleSide});
+                if (!url) materials.push(material);
+                nativeMaterialCache.set(key, material);
+                return material;
+            });
+            const modelGeometryCache = new Map();
             await Promise.all(regions.map(async region => {
                 const previewPath = this.props.previewPath ?? "preview/current";
                 const buffer = await loadBlocks(`session://${this.props.session}/${previewPath}/${dimension}.${region.x}.${region.z}.blocks.bin`);
                 if (this.destroyed) return;
-                const data = new DataView(buffer);
-                const count = data.getUint32(0);
-                const paletteCount = data.getUint16(4);
-                const palette = [];
-                const decoder = new TextDecoder();
-                let offset = 6;
-                for (let i = 0; i < paletteCount; i++) {
-                    const length = data.getUint32(offset);
-                    offset += 4;
-                    palette.push(decoder.decode(new Uint8Array(buffer, offset, length)));
-                    offset += length;
-                }
-                const recordStart = offset;
-                const counts = new Uint32Array(paletteCount);
-                const colors = new Uint32Array(paletteCount);
-                for (let i = 0; i < count; i++, offset += 12) {
-                    const paletteIndex = data.getUint16(offset + 10);
-                    counts[paletteIndex]++;
-                    colors[paletteIndex] = data.getUint32(offset + 6);
-                }
-                const meshes = palette.map((identifier, index) => new THREE.InstancedMesh(
-                    geometry, getMaterial(identifier, colors[index]), counts[index]
-                ));
-                const positions = new Uint32Array(paletteCount);
-                const matrix = new THREE.Matrix4();
-                offset = recordStart;
-                for (let i = 0; i < count; i++, offset += 12) {
-                    const x = data.getUint16(offset);
-                    const y = data.getInt16(offset + 2);
-                    const z = data.getUint16(offset + 4);
-                    const paletteIndex = data.getUint16(offset + 10);
-                    matrix.makeTranslation(region.x * 512 + x + 0.5 - originX, y + 0.5,
-                        region.z * 512 + z + 0.5 - originZ);
-                    meshes[paletteIndex].setMatrixAt(positions[paletteIndex]++, matrix);
-                }
-                meshes.forEach(mesh => {
-                    mesh.instanceMatrix.needsUpdate = true;
+                for (const surface of buildWorldMeshes(buffer, modelLibrary)) {
+                    const native = surface.model;
+                    if (native?.missing || native?.specialized) missing.add(surface.identifier.split("[")[0]);
+                    let geometry;
+                    if (surface.instances && modelGeometryCache.has(surface.identifier)) {
+                        geometry = modelGeometryCache.get(surface.identifier);
+                    } else {
+                        geometry = new THREE.BufferGeometry();
+                        const source = surface.instances ? native : surface;
+                        geometry.setAttribute("position", new THREE.BufferAttribute(source.positions, 3));
+                        geometry.setAttribute("normal", new THREE.BufferAttribute(source.normals, 3));
+                        geometry.setAttribute("uv", new THREE.BufferAttribute(source.uv, 2));
+                        geometry.setIndex(new THREE.BufferAttribute(source.indices, 1));
+                        source.groups.forEach(group => geometry.addGroup(group.start, group.count, group.materialIndex));
+                        geometries.push(geometry);
+                        if (surface.instances) modelGeometryCache.set(surface.identifier, geometry);
+                    }
+                    const material = native ? getNativeMaterials(native, surface.identifier, surface.color)
+                        : getMaterial(surface.identifier, surface.color);
+                    const mesh = surface.instances ? new THREE.InstancedMesh(geometry, material, surface.instances.length / 3)
+                        : new THREE.Mesh(geometry, material);
+                    if (surface.instances) {
+                        const matrix = new THREE.Matrix4();
+                        for (let i = 0; i < surface.instances.length; i += 3) {
+                            matrix.makeTranslation(surface.instances[i], surface.instances[i + 1], surface.instances[i + 2]);
+                            mesh.setMatrixAt(i / 3, matrix);
+                        }
+                        mesh.instanceMatrix.needsUpdate = true;
+                        instancedMeshes.push(mesh);
+                    }
+                    mesh.position.set(region.x * 512 - originX, 0, region.z * 512 - originZ);
                     scene.add(mesh);
-                });
+                }
             }));
             if (this.destroyed) return;
-            this.setState({loading: false, limited: allRegions.length > MAX_REGIONS});
+            const bounds = new THREE.Box3().setFromObject(scene);
+            if (!bounds.isEmpty()) {
+                const center = bounds.getCenter(new THREE.Vector3());
+                const radius = bounds.getSize(new THREE.Vector3()).length() / 2;
+                const aspect = container.clientWidth / Math.max(container.clientHeight, 1);
+                const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+                const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
+                const distance = radius / Math.sin(Math.min(verticalFov, horizontalFov) / 2) * 1.05;
+                controls.target.copy(center);
+                camera.position.copy(center).add(new THREE.Vector3(1, 0.8, 1).normalize().multiplyScalar(distance));
+                camera.far = Math.max(20000, distance + radius * 3);
+            }
+            this.setState({loading: false, limited: allRegions.length > MAX_REGIONS, missing:[...missing].sort()});
         } catch (error) {
             if (!this.destroyed) this.setState({loading: false, error: "The 3D terrain preview could not be loaded."});
         }
@@ -199,6 +246,10 @@ export class World3D extends Component {
         {this.state.loading && <div className="world_3d_message">Building 3D terrain preview...</div>}
         {this.state.error && <div className="world_3d_message error">{this.state.error}</div>}
         {this.state.limited && <div className="world_3d_notice">Showing the 9 central regions for performance.</div>}
+        {this.state.missing.length > 0 && <details className="world_3d_notice" style={{top: "auto", bottom: 32, left: 12, transform: "none"}}>
+            <summary>{this.state.missing.length} block types use fallback or simplified special models</summary>
+            <div style={{maxHeight: 160, overflow: "auto"}}>{this.state.missing.join(", ")}</div>
+        </details>}
         <div className="schematic_controls">WASD move · Shift faster · Mouse rotate · Wheel zoom</div>
     </div>; }
 }

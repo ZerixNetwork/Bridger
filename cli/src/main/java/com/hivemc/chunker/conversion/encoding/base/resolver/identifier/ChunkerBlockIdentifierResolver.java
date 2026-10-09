@@ -377,6 +377,9 @@ public abstract class ChunkerBlockIdentifierResolver implements Resolver<Identif
      * @return the custom block type if it's supported.
      */
     protected Optional<ChunkerBlockIdentifier> handleFallback(Identifier identifier) {
+        if (converter.isPreview()) {
+            return Optional.of(ChunkerBlockIdentifier.custom(identifier.getIdentifier(), identifier.getBoxedStates()));
+        }
         // Custom mappings aren't supported on minecraft: or when not namespaced or when not enabled
         if (identifier.getIdentifier().startsWith("minecraft:") || !identifier.getIdentifier().contains(":") || !customIdentifiersAllowed)
             return Optional.empty();

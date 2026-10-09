@@ -1,18 +1,23 @@
 package com.hivemc.chunker.conversion.encoding.preview;
 
 import com.google.common.collect.Sets;
+import com.hivemc.chunker.conversion.WorldConverter;
+import com.hivemc.chunker.conversion.encoding.EncodingType;
+import com.hivemc.chunker.conversion.encoding.java.base.resolver.identifier.JavaBlockIdentifierResolver;
 import com.hivemc.chunker.conversion.encoding.base.writer.ColumnWriter;
 import com.hivemc.chunker.conversion.intermediate.column.ChunkerColumn;
 import com.hivemc.chunker.conversion.intermediate.column.chunk.ChunkCoordPair;
 import com.hivemc.chunker.conversion.intermediate.column.chunk.RegionCoordPair;
 import com.hivemc.chunker.conversion.intermediate.column.chunk.identifier.ChunkerBlockIdentifier;
 import com.hivemc.chunker.conversion.intermediate.column.chunk.identifier.type.block.ChunkerCustomBlockType;
+import com.hivemc.chunker.conversion.intermediate.column.chunk.identifier.type.block.ChunkerVanillaBlockType;
 import it.unimi.dsi.fastutil.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,8 +26,9 @@ import java.util.concurrent.ConcurrentMap;
  * Write all the regions as images based on the block colors.
  */
 public class PreviewColumnWriter implements ColumnWriter {
-    private static final int MAX_VOXEL_REGIONS = 9;
-    private static final int MAX_VOXELS_PER_REGION = 55_555;
+    private static final JavaBlockIdentifierResolver MODEL_IDENTIFIERS = new JavaBlockIdentifierResolver(
+            new WorldConverter(null), EncodingType.JAVA.getSupportedVersions().stream().max(Comparator.naturalOrder()).orElseThrow(), false, true);
+    private final ConcurrentMap<ChunkerBlockIdentifier, String> modelNames = new ConcurrentHashMap<>();
     private final File outputFolder;
     private final ConcurrentMap<RegionCoordPair, ConcurrentMap<ChunkCoordPair, int[]>> chunkRGBA = new ConcurrentHashMap<>();
     private final ConcurrentMap<RegionCoordPair, ConcurrentMap<ChunkCoordPair, short[]>> chunkHeights = new ConcurrentHashMap<>();
@@ -50,6 +56,7 @@ public class PreviewColumnWriter implements ColumnWriter {
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 // Find the highest block that has RGB color
+                present |= chunkerColumn.getHighestBlock(x, z, PreviewColumnWriter::isRenderable) != null;
                 Pair<Integer, ChunkerBlockIdentifier> block = chunkerColumn.getHighestBlock(x, z, ChunkerBlockIdentifier::hasRGBColor);
                 if (block != null) {
                     // Mark the chunk as present
@@ -80,32 +87,57 @@ public class PreviewColumnWriter implements ColumnWriter {
             chunks.add(chunkerColumn.getPosition());
         }
 
-        // Keep real exposed blocks for the optional voxel preview. The global cap keeps large worlds bounded.
-        VoxelData voxels = getVoxelData(regionCoordPair);
-        if (voxels == null) return;
-        voxelScan:
+        // Write every exposed block; truncating a region leaves random holes in the terrain.
+        if (!present) return;
+        VoxelData voxels = regionVoxels.computeIfAbsent(regionCoordPair, region -> {
+            String name = worldData.dimension.getIdentifier().replace(":", "_");
+            return new VoxelData(new File(outputFolder,
+                    name + "." + region.regionX() + "." + region.regionZ() + ".blocks.tmp"));
+        });
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutputStream records = new DataOutputStream(bytes);
         for (var chunk : chunkerColumn.getChunks().values()) {
             int baseY = chunk.getY() << 4;
             for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
                 ChunkerBlockIdentifier identifier = chunk.getPalette().get(x, y, z, ChunkerBlockIdentifier.AIR);
-                if (!identifier.hasRGBColor()) continue;
+                if (!isRenderable(identifier)) continue;
                 int worldY = baseY + y;
                 boolean visible = x == 0 || x == 15 || z == 0 || z == 15 ||
-                        !chunkerColumn.getBlock(x - 1, worldY, z).hasRGBColor() ||
-                        !chunkerColumn.getBlock(x + 1, worldY, z).hasRGBColor() ||
-                        !chunkerColumn.getBlock(x, worldY - 1, z).hasRGBColor() ||
-                        !chunkerColumn.getBlock(x, worldY + 1, z).hasRGBColor() ||
-                        !chunkerColumn.getBlock(x, worldY, z - 1).hasRGBColor() ||
-                        !chunkerColumn.getBlock(x, worldY, z + 1).hasRGBColor();
+                        !occludes(chunkerColumn.getBlock(x - 1, worldY, z)) ||
+                        !occludes(chunkerColumn.getBlock(x + 1, worldY, z)) ||
+                        !occludes(chunkerColumn.getBlock(x, worldY - 1, z)) ||
+                        !occludes(chunkerColumn.getBlock(x, worldY + 1, z)) ||
+                        !occludes(chunkerColumn.getBlock(x, worldY, z - 1)) ||
+                        !occludes(chunkerColumn.getBlock(x, worldY, z + 1));
                 if (!visible) continue;
-                if (voxels.isFull()) break voxelScan;
-                String blockName = identifier.getType() instanceof ChunkerCustomBlockType custom
-                        ? custom.getIdentifier()
-                        : "minecraft:" + ((Enum<?>) identifier.getType()).name().toLowerCase(Locale.ROOT);
-                voxels.add(((chunkerColumn.getPosition().chunkX() & 31) << 4) | x, worldY,
-                        ((chunkerColumn.getPosition().chunkZ() & 31) << 4) | z, identifier.getRGBColor(), blockName);
+                String blockName = modelNames.computeIfAbsent(identifier, block -> MODEL_IDENTIFIERS.from(block)
+                        .map(Object::toString).orElseGet(() -> block.getType() instanceof ChunkerCustomBlockType custom
+                                ? custom.getIdentifier() : "minecraft:" + ((Enum<?>) block.getType()).name().toLowerCase(Locale.ROOT)));
+                voxels.add(records, ((chunkerColumn.getPosition().chunkX() & 31) << 4) | x, worldY,
+                        ((chunkerColumn.getPosition().chunkZ() & 31) << 4) | z, previewColor(identifier), blockName);
             }
         }
+        voxels.append(bytes);
+    }
+
+    private static boolean isRenderable(ChunkerBlockIdentifier block) {
+        return !block.isAir() && block.getType() != ChunkerVanillaBlockType.BARRIER
+                && block.getType() != ChunkerVanillaBlockType.CAVE_AIR
+                && block.getType() != ChunkerVanillaBlockType.VOID_AIR
+                && block.getType() != ChunkerVanillaBlockType.LIGHT
+                && block.getType() != ChunkerVanillaBlockType.STRUCTURE_VOID;
+    }
+
+    private static boolean occludes(ChunkerBlockIdentifier block) {
+        String name = block.getType().toString().toLowerCase(Locale.ROOT);
+        return isRenderable(block) && block.getType().isAllFacesSolid()
+                && !name.contains("glass") && !name.contains("leaves") && !name.contains("ice")
+                && !name.contains("slime") && !name.contains("honey") && !name.contains("grate")
+                && !name.contains("spawner") && !name.contains("mangrove_roots") && !name.contains("beacon");
+    }
+
+    private static int previewColor(ChunkerBlockIdentifier block) {
+        return block.hasRGBColor() ? block.getRGBColor() : 0xC0D8E0;
     }
 
     @Override
@@ -185,30 +217,24 @@ public class PreviewColumnWriter implements ColumnWriter {
         }
     }
 
-    private synchronized VoxelData getVoxelData(RegionCoordPair region) {
-        VoxelData existing = regionVoxels.get(region);
-        if (existing != null) return existing;
-        if (regionVoxels.size() >= MAX_VOXEL_REGIONS) {
-            RegionCoordPair farthest = regionVoxels.keySet().stream().max(Comparator.comparingLong(PreviewColumnWriter::distance)).orElse(null);
-            if (farthest == null || distance(region) >= distance(farthest)) return null;
-            regionVoxels.remove(farthest);
-        }
-        VoxelData created = new VoxelData();
-        regionVoxels.put(region, created);
-        return created;
-    }
-
-    private static long distance(RegionCoordPair region) {
-        return (long) region.regionX() * region.regionX() + (long) region.regionZ() * region.regionZ();
-    }
-
     private static class VoxelData {
-        private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        private final DataOutputStream output = new DataOutputStream(bytes);
+        private final File records;
         private final Map<String, Integer> palette = new LinkedHashMap<>();
         private int count;
 
-        synchronized void add(int x, int y, int z, int rgb, String identifier) {
+        VoxelData(File records) {
+            this.records = records;
+            try {
+                Files.createDirectories(records.toPath().getParent());
+                try (OutputStream ignored = new FileOutputStream(records)) {
+                    // Truncate any previous preview without keeping a file handle open per region.
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        synchronized void add(DataOutputStream output, int x, int y, int z, int rgb, String identifier) {
             try {
                 output.writeShort(x);
                 output.writeShort(y);
@@ -221,8 +247,12 @@ public class PreviewColumnWriter implements ColumnWriter {
             }
         }
 
-        synchronized boolean isFull() {
-            return count >= MAX_VOXELS_PER_REGION;
+        synchronized void append(ByteArrayOutputStream bytes) {
+            try (OutputStream target = new FileOutputStream(records, true)) {
+                bytes.writeTo(target);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
 
         synchronized void write(File file) throws IOException {
@@ -234,8 +264,9 @@ public class PreviewColumnWriter implements ColumnWriter {
                     target.writeInt(identifierBytes.length);
                     target.write(identifierBytes);
                 }
-                bytes.writeTo(target);
+                Files.copy(records.toPath(), target);
             }
+            Files.delete(records.toPath());
         }
     }
 }

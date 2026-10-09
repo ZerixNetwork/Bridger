@@ -16,6 +16,10 @@ import java.util.Optional;
  * A converter is an interface for converter settings / feeding information back to the user.
  */
 public interface Converter {
+    /** Whether this conversion only generates a visual preview. */
+    default boolean isPreview() {
+        return false;
+    }
     /**
      * Whether compaction is enabled for LevelDB. Bedrock only.
      *
