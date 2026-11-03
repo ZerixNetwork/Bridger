@@ -11,4 +11,6 @@ test("selects target metadata versions", () => {
     expect(targetVersion("java", "26.3").format).toEqual([97, 1]);
     expect(targetVersion("bedrock", "1.21.130").engine).toEqual([1, 21, 130]);
     expect(targetVersion("bedrock", "1.26.50").engine).toEqual([1, 26, 50]);
+    expect(targetVersion("bedrock", "1.26.60").engine).toEqual([1, 26, 60]);
+    expect(targetVersion("bedrock").id).toBe("1.26.60");
 });
