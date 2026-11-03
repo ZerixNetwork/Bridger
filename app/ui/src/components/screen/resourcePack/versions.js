@@ -24,7 +24,8 @@ export const BEDROCK_VERSIONS = [
     {id: "1.21.130", engine: [1, 21, 130]},
     {id: "1.26.0", engine: [1, 26, 0]},
     {id: "1.26.30", engine: [1, 26, 30]},
-    {id: "1.26.50", engine: [1, 26, 50]}
+    {id: "1.26.50", engine: [1, 26, 50]},
+    {id: "1.26.60", engine: [1, 26, 60]}
 ];
 
 export const versionsFor = edition => edition === "java" ? JAVA_VERSIONS : BEDROCK_VERSIONS;
