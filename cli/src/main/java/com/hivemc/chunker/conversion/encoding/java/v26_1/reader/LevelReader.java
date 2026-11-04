@@ -142,13 +142,13 @@ public class LevelReader extends com.hivemc.chunker.conversion.encoding.java.v1_
         CompoundTag weatherData = (CompoundTag) level.remove("weather_data");
         if (weatherData != null) {
             if (weatherData.contains("clear_weather_time")) {
-                level.put("clearWeatherTime", weatherData.getInt("clear_weather_time", 0));
+                level.put("clearWeatherTime", ((Number) weatherData.get("clear_weather_time").getBoxedValue()).intValue());
             }
             if (weatherData.contains("rain_time")) {
-                level.put("rainTime", weatherData.getInt("rain_time", 0));
+                level.put("rainTime", ((Number) weatherData.get("rain_time").getBoxedValue()).intValue());
             }
             if (weatherData.contains("thunder_time")) {
-                level.put("thunderTime", weatherData.getInt("thunder_time", 0));
+                level.put("thunderTime", ((Number) weatherData.get("thunder_time").getBoxedValue()).intValue());
             }
             if (weatherData.contains("raining")) {
                 level.put("raining", weatherData.getByte("raining", (byte) 0));
